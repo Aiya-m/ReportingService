@@ -11,10 +11,10 @@ function Nav(){
                     {/* Menu */}
                     <ul className="flex space-x-6">
                     <li>
-                        <a href="/admin" className="hover:text-gray-200">Officers</a>
+                        <a href="/admin-officer" className="hover:text-gray-200">Officers</a>
                     </li>
                     <li>
-                        <a href="#" className="hover:text-gray-200">Local People</a>
+                        <a href="/admin-localpeople" className="hover:text-gray-200">Local People</a>
                     </li>
                     </ul>
                 </div>
