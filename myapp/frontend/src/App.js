@@ -5,6 +5,8 @@ import {BrowserRouter, Routes, Route} from 'react-router-dom';
 import Home from './elements/Home';
 import Login from './elements/Login';
 import AdminOfficer from './elements/Admin/officerPage'
+import AdminLocal from './elements/Admin/localPage'
+
 function App() {
 
   // const [backendData, setBackendData] = useState([{}])
@@ -23,7 +25,8 @@ function App() {
       <Routes>
         <Route path="/" element={<Home />} />
         <Route path="/login" element={<Login />} />
-        <Route path="/admin" element={<AdminOfficer />}/>
+        <Route path="/admin-officer" element={<AdminOfficer />} />
+        <Route path='/admin-localpeople' element={<AdminLocal />} />
       </Routes>
     </BrowserRouter>
     // <div>
