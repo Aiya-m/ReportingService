@@ -1,6 +1,7 @@
 import React, { useState } from "react";
 import UserPool from "../UserPool";
 import { CognitoUserAttribute } from "amazon-cognito-identity-js";
+import Nav from '../elements/Admin/Nav'
 
 const Login = () => {
   const [form, setForm] = useState({
@@ -45,17 +46,29 @@ const Login = () => {
 
   return (
     <div>
-      <form onSubmit={handleSubmit}>
+      <Nav/>
+      <div className="rounded shadow-lg p-10 justify-self-center mt-25 w-lg">
+        <h1 className="text-xl font-bold text-center">เข้าสู่ระบบ</h1>
+        <form onSubmit={handleSubmit}>
+          <div className="flex">
+            <label htmlFor="username">ชื่อผู้ใช้ : </label>
+            <input name="username" value={form.username} onChange={handleChange} placeholder="Username" type="text" className="border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2"/>
+          </div>
+          <div>
+            <label htmlFor="email">อีเมล : </label>
+            <input name="email" value={form.email} onChange={handleChange} placeholder="Email" className="border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2"/>
+          </div>
+          <div>
+            <label htmlFor="password">รหัสผ่าน : </label>
+            <input name="password" type="password" value={form.password} onChange={handleChange} placeholder="Password" className="border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2"/>
+          </div>
+          <input name="phoneNumber" value={form.phoneNumber} onChange={handleChange} placeholder="Phone (+123...)" className="border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2"/>
+          <input name="firstName" value={form.firstName} onChange={handleChange} placeholder="First Name" className="border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2"/>
+          <input name="lastName" value={form.lastName} onChange={handleChange} placeholder="Last Name" className="border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2"/>
 
-        <input name="username" value={form.username} onChange={handleChange} placeholder="Username" /><p/>
-        <input name="email" value={form.email} onChange={handleChange} placeholder="Email" /><p/>
-        <input name="password" type="password" value={form.password} onChange={handleChange} placeholder="Password" /><p/>
-        <input name="phoneNumber" value={form.phoneNumber} onChange={handleChange} placeholder="Phone (+123...)" /><p/>
-        <input name="firstName" value={form.firstName} onChange={handleChange} placeholder="First Name" /><p/>
-        <input name="lastName" value={form.lastName} onChange={handleChange} placeholder="Last Name" /><p/>
-
-        <button type="submit">Sign Up</button>
-      </form>
+          <button type="submit">Sign Up</button>
+        </form>
+      </div>
     </div>
   );
 };
