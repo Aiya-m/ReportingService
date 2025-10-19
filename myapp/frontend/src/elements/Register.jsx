@@ -1,9 +1,10 @@
 import React, { useState } from "react";
+import { useNavigate } from 'react-router-dom';
 import UserPool from "../UserPool";
 import { CognitoUserAttribute } from "amazon-cognito-identity-js";
 import Nav from '../elements/Admin/Nav'
 
-const Login = () => {
+const Register = () => {
   const [form, setForm] = useState({
     username: "",
     email: "",
@@ -20,6 +21,9 @@ const Login = () => {
 
   const handleSubmit = (e) => {
     e.preventDefault();
+
+    const navigate = useNavigate();
+    const userData = {username: form.username}
 
     // ✅ Cognito needs attributes as "CognitoUserAttribute" objects
     const attributes = [
@@ -42,6 +46,8 @@ const Login = () => {
         }
       }
     );
+
+    navigate('/ConfirmRegister', { state: userData })
   };
 
   return (
@@ -73,4 +79,4 @@ const Login = () => {
   );
 };
 
-export default Login;
+export default Register;
