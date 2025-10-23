@@ -4,6 +4,7 @@ import UserPool from "../UserPool";
 import { CognitoUserAttribute } from "amazon-cognito-identity-js";
 
 const Register = () => {
+  const navigate = useNavigate();
   const [form, setForm] = useState({
     username: "",
     email: "",
@@ -21,7 +22,6 @@ const Register = () => {
   const handleSubmit = (e) => {
     e.preventDefault();
 
-    const navigate = useNavigate();
     const userData = {username: form.username}
 
     // ✅ Cognito needs attributes as "CognitoUserAttribute" objects
@@ -46,7 +46,7 @@ const Register = () => {
       }
     );
 
-    navigate('/ConfirmRegister', { state: userData })
+    navigate('/Home', { state: userData })
   };
 
   return (
