@@ -48,7 +48,7 @@ const Register = () => {
       }
     );
 
-    navigate('/ConfirmRegister', { state: userData })
+    navigate('/Home', { state: userData })
   };
 
   return (
