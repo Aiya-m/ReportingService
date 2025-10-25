@@ -2,9 +2,10 @@ import React, { useState } from "react";
 import { useNavigate } from 'react-router-dom';
 import UserPool from "../UserPool";
 import { CognitoUserAttribute } from "amazon-cognito-identity-js";
-import Nav from '../elements/Admin/Nav'
+import Nav from './Admin/Nav'
 
 const Register = () => {
+  const navigate = useNavigate();
   const [form, setForm] = useState({
     username: "",
     email: "",
@@ -18,11 +19,11 @@ const Register = () => {
     const { name, value } = e.target;
     setForm((prev) => ({ ...prev, [name]: value }));
   };
+  
 
   const handleSubmit = (e) => {
     e.preventDefault();
 
-    const navigate = useNavigate();
     const userData = {username: form.username}
 
     // ✅ Cognito needs attributes as "CognitoUserAttribute" objects
@@ -72,7 +73,7 @@ const Register = () => {
           <input name="firstName" value={form.firstName} onChange={handleChange} placeholder="First Name" className="border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2"/>
           <input name="lastName" value={form.lastName} onChange={handleChange} placeholder="Last Name" className="border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2"/>
 
-          <button type="submit">Sign Up</button>
+          <button type="submit" class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded">Sign Up</button>
         </form>
       </div>
     </div>
