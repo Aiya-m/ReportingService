@@ -2,6 +2,8 @@ import * as React from "react";
 import { Map, Popup, Source, Layer, Marker } from "@vis.gl/react-maplibre";
 import "maplibre-gl/dist/maplibre-gl.css";
 import * as turf from "@turf/turf";
+import Nav from './Admin/Nav'
+import { useNavigate } from 'react-router-dom';
 
 // async function getLocation() {
 //     return new Promise((resolve) => {
@@ -29,6 +31,7 @@ import * as turf from "@turf/turf";
 
 function Home() {
     const mapRef = React.useRef(null);
+    const navigate = useNavigate();
 
     const [cautionLocations, setCautionLocations] = React.useState([]);
 
@@ -183,53 +186,61 @@ function Home() {
 
     return (
         <div>
-            This is Home.
-            <Map
-                ref={mapRef} // ✅ this gives direct control
-                initialViewState={{ ...viewState }}
-                onMove={(evt) => setViewState(evt.viewState)}
-                mapStyle="https://tiles.openfreemap.org/styles/liberty"
-                style={{ width: 600, height: 400 }}
-            >
-                {circlesData && (
-                    <Source id="circle" type="geojson" data={circlesData}>
-                        <Layer
-                            id="circle-fill"
-                            type="fill"
-                            paint={{
-                                "fill-color": "#f63b3bff",
-                                "fill-opacity": 0.3,
-                            }}
-                        />
-                        <Layer
-                            id="circle-outline"
-                            type="line"
-                            paint={{
-                                "line-color": "#d81d1dff",
-                                "line-width": 2,
-                            }}
-                        />
-                    </Source>
-                )}
-                {userLocation && (
-                    <Marker longitude={userLocation[0]} latitude={userLocation[1]}>
-                        <div
-                            style={{
-                                width: "20px",
-                                height: "20px",
-                                backgroundColor: insideCircle ? "#ff0000" : "#2563eb",
-                                borderRadius: "50%",
-                                border: "2px solid white",
-                                boxShadow: "0 0 6px rgba(0,0,0,0.3)",
-                            }}
-                        />
-                    </Marker>
-                )}
+            <Nav></Nav>
+            <div className="flex flex-col h-screen w-screen">
+                <div className="flex-grow px-3 py-2">
+                    <Map
+                        ref={mapRef} // ✅ this gives direct control
+                        initialViewState={{ ...viewState }}
+                        onMove={(evt) => setViewState(evt.viewState)}
+                        mapStyle="https://tiles.openfreemap.org/styles/liberty"
+                        className="w-full h-full rounded-lg shadow-md"
+                    >
+                        {circlesData && (
+                            <Source id="circle" type="geojson" data={circlesData}>
+                                <Layer
+                                    id="circle-fill"
+                                    type="fill"
+                                    paint={{
+                                        "fill-color": "#f63b3bff",
+                                        "fill-opacity": 0.3,
+                                    }}
+                                />
+                                <Layer
+                                    id="circle-outline"
+                                    type="line"
+                                    paint={{
+                                        "line-color": "#d81d1dff",
+                                        "line-width": 2,
+                                    }}
+                                />
+                            </Source>
+                        )}
+                        {userLocation && (
+                            <Marker longitude={userLocation[0]} latitude={userLocation[1]}>
+                                <div
+                                    style={{
+                                        width: "20px",
+                                        height: "20px",
+                                        backgroundColor: insideCircle ? "#ff0000" : "#2563eb",
+                                        borderRadius: "50%",
+                                        border: "2px solid white",
+                                        boxShadow: "0 0 6px rgba(0,0,0,0.3)",
+                                    }}
+                                />
+                            </Marker>
+                        )}
 
-                {/* <Popup longitude={popupLocation[0]} latitude={popupLocation[1]}>
-                    <h3>You are approximately here!</h3>
-                </Popup> */}
-            </Map>
+                        {/* <Popup longitude={popupLocation[0]} latitude={popupLocation[1]}>
+                                <h3>You are approximately here!</h3>
+                            </Popup> */}
+                    </Map>
+                </div>
+                <div className="absolute bottom-4 left-0 right-0 flex justify-center gap-4 px-4">
+                    <button className="flex-1 bg-blue-600 text-white py-2 rounded-xl shadow-lg" onClick={() => navigate("/report-form")}>Report</button>
+                    <button className="flex-1 bg-red-600 text-white py-2 rounded-xl shadow-lg" onClick={() => navigate("/report-form-emergency")}>Emergency Report</button>
+                </div>
+            </div>
         </div>
     );
 }
