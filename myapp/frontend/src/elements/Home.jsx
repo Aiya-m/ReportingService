@@ -4,30 +4,8 @@ import "maplibre-gl/dist/maplibre-gl.css";
 import * as turf from "@turf/turf";
 import Nav from './Admin/Nav'
 import { useNavigate } from 'react-router-dom';
-
-// async function getLocation() {
-//     return new Promise((resolve) => {
-//         if (!navigator.geolocation) {
-//             console.warn("❌ Geolocation not supported. Falling back.");
-//             return resolve([-100, 40]);
-//         }
-
-//         console.log("📍 Requesting user location...");
-
-//         navigator.geolocation.getCurrentPosition(
-//             (position) => {
-//                 const { latitude, longitude } = position.coords;
-//                 console.log("✅ Got location:", longitude, latitude);
-//                 resolve([longitude, latitude]);
-//             },
-//             (error) => {
-//                 console.error("⚠️ Geolocation error:", error);
-//                 resolve([-100, 40]); // fallback
-//             },
-//             { enableHighAccuracy: true, timeout: 5000 }
-//         );
-//     });
-// }
+import BottomNavbar from "./Local_People/Nav";
+import { ArrowLeft, Image as ImageIcon } from "lucide-react";
 
 function Home() {
     const mapRef = React.useRef(null);
@@ -117,78 +95,14 @@ function Home() {
         setInsideCircle(isInside);
     }, [userLocation, circlesData]);
 
-
-    //run main function to get userlocation and draw circles around cautionLocations
-    // React.useEffect(() => {
-    //     if (!navigator.geolocation) {
-    //         console.warn("❌ Geolocation not supported");
-    //         return;
-    //     }
-
-    //     const circles = turf.featureCollection(
-    //         cautionLocations.map((loc) => turf.circle(loc, 1, {
-    //             steps: 64,
-    //             units: "kilometers",
-    //         }))
-    //     );
-    //     setCirclesData(circles);
-
-
-    //     const watchId = navigator.geolocation.watchPosition(
-    //         (position) => {
-    //             const { latitude, longitude } = position.coords;
-    //             console.log("Updated location:", longitude, latitude);
-
-    //             setUserLocation([longitude, latitude]);
-
-    //             // Smoothly move map to new position
-    //             if (mapRef.current) {
-    //                 mapRef.current.jumpTo({
-    //                     center: [longitude, latitude],
-    //                     zoom: 16
-    //                 });
-    //             }
-    //         },
-    //         (error) => {
-    //             console.error("Geolocation watch error:", error);
-    //         },
-    //         { enableHighAccuracy: true, maximumAge: 10000, timeout: 10000 }
-    //     );
-
-    //     // 🧹 Cleanup on unmount
-    //     return () => {
-    //         navigator.geolocation.clearWatch(watchId);
-    //     };
-    // }, []);
-
-
-    //     (async () => {
-    //         const location = await getLocation();
-    //         setPopupLocation(location);
-
-    //         const circles = turf.featureCollection(
-    //             locations.map((loc) => turf.circle(loc, 2, { // 2 km radius
-    //                 steps: 64,
-    //                 units: "kilometers",
-    //             }))
-    //         );
-    //         setCirclesData(circles);
-
-    //         if (mapRef.current) {
-    //             console.log("✅ Map is ready, flying to new location...");
-    //             mapRef.current.flyTo({ center: location, zoom: 8 });
-
-    //         } else {
-    //             console.warn("❌ Map is still null");
-    //         }
-    //     })();
-    // }, []);
-
     return (
-        <div>
-            <Nav></Nav>
-            <div className="flex flex-col h-screen w-screen">
-                <div className="flex-grow px-3 py-2">
+        <div className="flex justify-center bg-gray-200 min-h-screen">
+            <div className="relative w-full max-w-sm sm:max-w-md bg-white shadow-lg rounded-lg overflow-y-auto max-h-screen">
+                <div className="flex items-center bg-orange-500 text-white px-4 py-3">
+                    <h1 className="text-lg font-bold">ResQ</h1>
+                </div>
+
+                <div className="relative h-[525px]">
                     <Map
                         ref={mapRef} // ✅ this gives direct control
                         initialViewState={{ ...viewState }}
@@ -236,9 +150,12 @@ function Home() {
                             </Popup> */}
                     </Map>
                 </div>
-                <div className="absolute bottom-4 left-0 right-0 flex justify-center gap-4 px-4">
-                    <button className="flex-1 bg-blue-600 text-white py-2 rounded-xl shadow-lg" onClick={() => navigate("/report-form")}>Report</button>
-                    <button className="flex-1 bg-red-600 text-white py-2 rounded-xl shadow-lg" onClick={() => navigate("/report-form-emergency")}>Emergency Report</button>
+                <div className="flex flex-col gap-4 px-4 py-4 bg-white">
+                    <button className="bg-blue-600 text-white py-2 rounded-xl shadow-lg" onClick={() => navigate("/report-page")}>Report</button>
+                    <button className="bg-red-600 text-white py-2 rounded-xl shadow-lg" onClick={() => navigate("/report-form-emergency")}>Emergency Report</button>
+                </div>
+                <div className="absolute bottom-0 w-full flex-shrink-0">
+                    <BottomNavbar />
                 </div>
             </div>
         </div>
