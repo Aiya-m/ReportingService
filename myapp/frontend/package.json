@@ -4,6 +4,7 @@
   "proxy": "http://localhost:5000",
   "private": true,
   "dependencies": {
+    "@react-navigation/bottom-tabs": "^7.6.0",
     "@testing-library/dom": "^10.4.1",
     "@testing-library/jest-dom": "^6.8.0",
     "@testing-library/react": "^16.3.0",
@@ -11,6 +12,8 @@
     "@turf/turf": "^7.2.0",
     "@vis.gl/react-maplibre": "^8.0.4",
     "amazon-cognito-identity-js": "^6.3.15",
+    "axios": "^1.12.2",
+    "lucide-react": "^0.548.0",
     "maplibre-gl": "^5.7.3",
     "react": "^19.1.1",
     "react-dom": "^19.1.1",

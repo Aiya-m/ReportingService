@@ -6,6 +6,10 @@ import Home from './elements/Home';
 import Register from './elements/Register';
 import AdminOfficer from './elements/Admin/officerPage'
 import AdminLocal from './elements/Admin/localPage'
+import LocalReport from './elements/Local_People/ReportPage'
+import Profile from './elements/Local_People/ProfilePage'
+import HistoryPage from './elements/Local_People/ReportHistoryPage'
+import ManageProfile from './elements/Local_People/ManageProfilePage'
 
 function App() {
 
@@ -27,6 +31,10 @@ function App() {
         <Route path="/register" element={<Register />} />
         <Route path="/admin-officer" element={<AdminOfficer />} />
         <Route path='/admin-localpeople' element={<AdminLocal />} />
+        <Route path='/report-page' element={<LocalReport />} />
+        <Route path='/profile' element={<Profile />} />
+        <Route path='/history-page' element={<HistoryPage />} />
+        <Route path='/manage-profile' element={<ManageProfile />} />
       </Routes>
     </BrowserRouter>
     // <div>
