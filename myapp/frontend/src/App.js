@@ -3,7 +3,8 @@ import './App.css';
 import React, { useEffect, useState } from 'react';
 import {BrowserRouter, Routes, Route} from 'react-router-dom';
 import Home from './elements/Home';
-import Register from './elements/Register';
+import RegisterL from './elements/registerLocalPeople';
+import RegisterO from './elements/Officer/registerOfficer';
 import AdminOfficer from './elements/Admin/officerPage'
 import AdminLocal from './elements/Admin/localPage'
 import LocalReport from './elements/Local_People/ReportPage'
@@ -28,7 +29,8 @@ function App() {
     <BrowserRouter>
       <Routes>
         <Route path="/" element={<Home />} />
-        <Route path="/register" element={<Register />} />
+        <Route path="/register" element={<RegisterL />} />
+        <Route path="/register-officer" element={<RegisterO />} />
         <Route path="/admin-officer" element={<AdminOfficer />} />
         <Route path='/admin-localpeople' element={<AdminLocal />} />
         <Route path='/report-page' element={<LocalReport />} />

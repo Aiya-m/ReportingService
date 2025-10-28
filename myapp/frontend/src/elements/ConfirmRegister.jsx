@@ -93,11 +93,11 @@ const ConfirmRegister = () => {
       <div className="bg-white p-8 rounded-lg shadow-lg w-full max-w-sm">
 
         <h2 className="text-2xl font-bold text-center text-gray-800 mb-4">
-          Confirm Your Account
+          การยืนยันบัญชี
         </h2>
         
         <p className="text-sm text-gray-600 text-center mb-6">
-          A confirmation code was sent to:{" "}
+          รหัสการยืนยันบัญชีถูกส่งไปที่ : {" "}
           <strong className="font-medium text-gray-900">
             {location.state?.email}
           </strong>
@@ -106,7 +106,7 @@ const ConfirmRegister = () => {
         <form onSubmit={handleSubmit} className="space-y-6">
 
           <div>
-            <label htmlFor="confirmationCode" className="sr-only">Confirmation Code</label>
+            <label htmlFor="confirmationCode" className="sr-only">รหัสการยืนยันบัญชี</label>
             <input 
               id="confirmationCode"
               name="confirmationCode"
