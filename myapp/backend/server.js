@@ -9,7 +9,7 @@ import { uploadToS3 } from "./s3.js";
 dotenv.config();
 const app = express();
 const PORT = 5000;
-app.use(cors({ origin: "http://localhost:3000" }));
+app.use(cors());
 app.use(express.json());
 app.use(bodyParser.json());
 
@@ -106,6 +106,15 @@ app.get("/reports", async (req, res) => {
     console.error(err);
     res.status(500).json({ message: "เกิดข้อผิดพลาดในการดึงข้อมูล" });
   }
+});
+
+app.get("/reports/:id", async (req, res) => {
+  const { id } = req.params;
+  const [rows] = await db.query("SELECT * FROM Report WHERE id = ?", [id]);
+  if (rows.length === 0) {
+    return res.status(404).json({ message: "Report not found" });
+  }
+  res.json({ report: rows[0] });
 });
 
 app.get("/reports/pending", async (req, res) => {
