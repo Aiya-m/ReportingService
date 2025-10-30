@@ -11,7 +11,7 @@ const ReportIncoming = () => {
     useEffect(() => {
         const fetchPendingReports = async () => {
             try {
-                const res = await fetch("http://52.87.254.106:5000/reports/pending");
+                const res = await fetch("http://54.226.138.110:5000/reports/pending");
                 const data = await res.json();
                 if (res.ok) {
                     setReports(data.reports || []);
