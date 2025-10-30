@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import useMutation from "../../hooks/useMutation";
 import { ArrowLeft, Image as ImageIcon } from "lucide-react";
 import BottomNavbar from "./Nav";
+import { destination } from "@turf/turf";
 
 const validFileType = ['image/png', 'image/jpeg', 'image/png']
 const URL = "/images"
@@ -45,9 +46,32 @@ const Report = () => {
         setFileName(file.name);
     };
 
-    const handleSubmit = (e) => {
+    const handleSubmit = async (e) => {
         e.preventDefault();
-        console.log(form);
+
+        try {
+            const response = await fetch("http://localhost:5000/report-page", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({
+                    description: form.detail,
+                    phone_number: form.phone_num,
+                    address: form.address,
+                    title: form.agency
+                })
+            });
+
+            const data = await response.json();
+            if (response.ok) {
+                alert("บันทึกเรียบร้อย! ID: " + data.reportId);
+                navigate(-1);
+            } else {
+                alert("เกิดข้อผิดพลาด: " + data.message);
+            }
+        } catch (err) {
+            console.error(err);
+            alert("เกิดข้อผิดพลาดระหว่างเชื่อมต่อเซิร์ฟเวอร์");
+        }
     };
 
     return (

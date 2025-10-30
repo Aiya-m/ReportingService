@@ -4,9 +4,9 @@ import cors from "cors";
 import dotenv from "dotenv";
 import multer from "multer";
 import mysql from "mysql2";
+import { uploadToS3 } from "./s3.js";
 
 dotenv.config();
-const { uploadToS3 } = require("./s3");
 const app = express();
 const PORT = 5000;
 app.use(cors({ origin: "http://localhost:3000" }));
@@ -44,6 +44,26 @@ db.getConnection((err, connection) => {
     console.log("Connected to MySQL database!");
     connection.release();
   }
+});
+
+app.post("/report-page", async (req, res) => {
+  const { description, phone_number, address, title } = req.body;
+
+  if (!description || !phone_number || !address || !title) {
+    return res.status(400).json({ message: "กรอกข้อมูลให้ครบ" });
+  }
+
+  try {
+    const[result] = await db.execute(
+      `INSERT INTO reports (description, phone_number, address, title) VALUES (?, ?, ?, ?)`,
+      [description, phone_number, address, title]
+    );
+    res.status(200).json({ message: "บันทึกข้อมูลเรียบร้อย", reportId: result.insertId })
+  } catch (err){
+    console.error(err);
+    res.status(500).json({ message: "เกิดข้อผิดพลาด" });
+  }
+  console.log("📦 req.body =", req.body);
 });
 
 app.get("/", (req, res) => {
