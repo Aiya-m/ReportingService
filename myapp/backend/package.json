@@ -12,14 +12,17 @@
   "author": "",
   "license": "ISC",
   "dependencies": {
-    "@aws-sdk/client-s3": "^3.917.0",
+    "@aws-sdk/client-cognito-identity-provider": "^3.919.0",
+    "@aws-sdk/client-s3": "^3.919.0",
     "cors": "^2.8.5",
     "dotenv": "^17.2.3",
     "express": "^5.1.0",
     "multer": "^2.0.2",
     "mysql2": "^3.15.3",
+    "negotiator": "^1.0.0",
     "nodemon": "^3.1.10",
     "openid-client": "^5.7.0",
+    "serve": "^14.2.5",
     "uuid": "^13.0.0"
   }
 }
