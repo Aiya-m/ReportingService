@@ -5,6 +5,7 @@ import { CognitoUserAttribute } from "amazon-cognito-identity-js";
 import { useForm } from "react-hook-form";
 import { yupResolver } from "@hookform/resolvers/yup";
 import { userRegisterSchema, officerRegisterSchema } from "./validationSchema";
+import RoleToggle, { ACCOUNT_TYPES }  from "./RoleToggle";
 
 const BackIcon = () => (
   <svg 
@@ -23,29 +24,27 @@ const BackIcon = () => (
   </svg>
 );
 
-const ToggleSwitch = ({ checked, onChange }) => (
-  <button
-    type="button"
-    onClick={onChange}
-    className={`relative inline-flex items-center h-6 rounded-full w-11 transition-colors ${
-      checked ? 'bg-orange-600' : 'bg-gray-300'
-    }`}
-  >
-    <span
-      className={`inline-block w-4 h-4 transform bg-white rounded-full transition-transform ${
-        checked ? 'translate-x-6' : 'translate-x-1'
-      }`}
-    />
-  </button>
-);
+// const ToggleSwitch = ({ checked, onChange }) => (
+//   <button
+//     type="button"
+//     onClick={onChange}
+//     className={`relative inline-flex items-center h-6 rounded-full w-11 transition-colors ${
+//       checked ? 'bg-orange-600' : 'bg-gray-300'
+//     }`}
+//   >
+//     <span
+//       className={`inline-block w-4 h-4 transform bg-white rounded-full transition-transform ${
+//         checked ? 'translate-x-6' : 'translate-x-1'
+//       }`}
+//     />
+//   </button>
+// );
 
 const Register = () => {
   const navigate = useNavigate();
   const [loading, setLoading] = useState(false);
   const [role, setRole] = useState("localpeople");
   const [isOfficer, setIsOfficer] = useState(false);
-  const [password, setPassword] = useState("");
-  const [confirmPassword, setConfirmPassword] = useState("");
 
   const currentSchema = isOfficer ? officerRegisterSchema : userRegisterSchema;
 
@@ -60,13 +59,20 @@ const Register = () => {
   });
 
   useEffect(() => {
-    if (isOfficer)
-      setRole("officer")
-    reset(); 
+    if (isOfficer) {
+      setRole("officer");
+    } else {
+      setRole("localpeople");
+    }
+    reset();
   }, [isOfficer, reset]);
 
-  const handleToggleChange = () => {
-    setIsOfficer(prev => !prev);
+  // const handleToggleChange = () => {
+  //   setIsOfficer(prev => !prev);
+  // };
+  const handleRoleChange = (newRole) => {
+    console.log("Selected role:", newRole);
+    setIsOfficer(newRole === ACCOUNT_TYPES.OFFICER);
   };
 
   // const handleChange = (e) => {
@@ -145,9 +151,13 @@ const Register = () => {
       </h2>
 
       <div className="flex items-center justify-center space-x-3 mb-6">
-        <span className="font-medium text-white">ผู้ใช้ทั่วไป</span>
+        {/* <span className="font-medium text-white">ผู้ใช้ทั่วไป</span>
         <ToggleSwitch checked={isOfficer} onChange={handleToggleChange} />
-        <span className="font-medium text-white">เจ้าหน้าที่</span>
+        <span className="font-medium text-white">เจ้าหน้าที่</span> */}
+        <RoleToggle 
+          onToggleChange={handleRoleChange}
+          currentType={isOfficer ? ACCOUNT_TYPES.OFFICER : ACCOUNT_TYPES.CITIZEN}
+        />
       </div>
 
       <form onSubmit={handleSubmit(onSubmit)} className="w-full max-w-lg mx-auto space-y-6">
