@@ -11,6 +11,9 @@ import LocalReport from './elements/Local_People/ReportPage'
 import Profile from './elements/Local_People/ProfilePage'
 import HistoryPage from './elements/Local_People/ReportHistoryPage'
 import ManageProfile from './elements/Local_People/ManageProfilePage'
+import ReportIncome from './elements/Officer/reportincoming'
+import ReportProgress from './elements/Officer/reportinprogress'
+import ReportComplete from './elements/Officer/reportcomplete'
 
 function App() {
 
@@ -37,6 +40,9 @@ function App() {
         <Route path='/profile' element={<Profile />} />
         <Route path='/history-page' element={<HistoryPage />} />
         <Route path='/manage-profile' element={<ManageProfile />} />
+        <Route path='/report-incoming' element={<ReportIncome />} />
+        <Route path='/report-in-progress' element={<ReportProgress />} />
+        <Route path='/report-complete' element={<ReportComplete />} />
       </Routes>
     </BrowserRouter>
     // <div>

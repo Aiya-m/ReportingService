@@ -98,15 +98,25 @@ const Report = () => {
                         </div>
 
                         <div>
-                            <label className="text-sm text-gray-700">เลือกหน่วยงาน</label>
-                            <input
-                                type="text"
+                            <label className="text-sm text-gray-700">ประเภทอุบัติเหตุ</label>
+                            <select
                                 name="agency"
                                 value={form.agency}
                                 onChange={handleChange}
                                 className="w-full border rounded-md p-2 mt-1 focus:outline-none focus:ring-2 focus:ring-orange-400"
-                            />
+                            >
+                                <option value="">ปัญหาทั่วไป</option>
+                                <option value="ไฟไหม้">ไฟไหม้</option>
+                                <option value="อุบัติเหตุท้องถนน">อุบัติเหตุรถ</option>
+                                <option value="บาดเจ็บ/ป่วยฉุกเฉินม">บาดเจ็บ/ป่วยฉุกเฉิน</option>
+                                <option value="ทะเลาะวิวาท">ทะเลาะวิวาท</option>
+                                <option value="สัตว์อันตราย">สัตว์อันตราย</option>
+                                <option value="ไฟดับ">ไฟดับ</option>
+                                <option value="น้ำไม่ไหล">น้ำไม่ไหล</option>
+                                <option value="โจรกรรม">โจรกรรม</option>
+                            </select>
                         </div>
+
 
                         <div>
                             <label className="text-sm text-gray-700">แนบรูปประกอบ</label>

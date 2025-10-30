@@ -4,7 +4,7 @@ import useMutation from "../../hooks/useMutation";
 import { ArrowLeft, Image as ImageIcon } from "lucide-react";
 import BottomNavbar from "./Nav";
 
-const ReportHistory = () => {
+const ProfilePage = () => {
     const navigate = useNavigate();
 
     return (
@@ -54,4 +54,4 @@ const ReportHistory = () => {
     );
 };
 
-export default ReportHistory;
+export default ProfilePage;
