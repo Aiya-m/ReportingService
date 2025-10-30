@@ -16,13 +16,30 @@ import {
   AdminUpdateUserAttributesCommand,
 } from "@aws-sdk/client-cognito-identity-provider";
 
-// dotenv.config();
+import { uploadToS3 } from "./s3.js";
+import {
+  CognitoIdentityProviderClient,
+  AdminGetUserCommand,
+  AdminUpdateUserAttributesCommand,
+} from "@aws-sdk/client-cognito-identity-provider";
+
+dotenv.config();
 const app = express();
 const PORT = 5000;
 app.use(cors());
 app.use(express.json({ limit: "20mb" }));
 app.use(bodyParser.json({ limit: "20mb" }));
 
+
+const client = new CognitoIdentityProviderClient({
+  region: process.env.AWS_REGION,
+  credentials: {
+    accessKeyId: process.env.AWS_ACCESS_KEY_ID,
+    secretAccessKey: process.env.AWS_SECRET_ACCESS_KEY,
+    sessionToken: process.env.AWS_SESSION_TOKEN
+  },
+});
+const userPoolId = "us-east-1_4wFdFGByS";
 
 const upload = multer({ storage: multer.memoryStorage() });
 
@@ -38,15 +55,6 @@ app.post("/images", upload.single("image"), async (req, res) => {
   if (error) return res.status(500).json({ message: error.message });
 
   return res.status(201).json({ key });
-});
-
-const client = new CognitoIdentityProviderClient({
-  region: process.env.AWS_REGION,
-  credentials: {
-    accessKeyId: process.env.AWS_ACCESS_KEY_ID,
-    secretAccessKey: process.env.AWS_SECRET_ACCESS_KEY,
-    sessionToken: process.env.AWS_SESSION_TOKEN
-  },
 });
 
 const cognitoClient = new CognitoIdentityProviderClient({
@@ -330,5 +338,31 @@ app.get("/get-departments-list", (req, res) => {
     res.json(results);
   });
 });
+
+app.post("/manage-profile", async (req, res) => {
+  
+  try {
+    const { username, firstname, lastname, phone_number } = req.body;
+    const address = req.body.address || "";
+    
+    await client.send(
+      new AdminUpdateUserAttributesCommand({
+        UserPoolId: userPoolId,
+        Username: username,
+        UserAttributes: [
+          { Name: "given_name", Value: firstname },
+          { Name: "family_name", Value: lastname },
+          { Name: "phone_number", Value: phone_number },
+          { Name: "custom:address", Value: address },
+        ],
+      })
+    );
+
+    res.json({ success: true, redirectTo: "/profile" });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ error: "Failed to update user" });
+  }
+})
 
 app.listen(PORT, () => console.log(`Server running on port ${PORT}`));

@@ -1,6 +1,6 @@
 import React, {useState, useEffect, useContext, createContext} from "react"
 import Pool from "../UserPool";
-import { CognitoUser, AuthenticationDetails } from 'amazon-cognito-identity-js';
+import { CognitoUser, AuthenticationDetails } from "amazon-cognito-identity-js";
 
 const AccountContext = createContext();
 
@@ -9,7 +9,7 @@ const Account = (props) => {
     const [isLoading, setIsLoading] = useState(true);
 
     const getSession = async () => {
-        return await new Promise((resolve, reject) => {
+        return new Promise((resolve, reject) => {
             const user = Pool.getCurrentUser();
             if (user) {
                 user.getSession((err, session) => {
@@ -44,16 +44,9 @@ const Account = (props) => {
     }, []);
 
     const authenticate = async (Username, Password) => {
-        return await new Promise((resolve, reject) => {
-            const authDetails = new AuthenticationDetails({
-                Username,
-                Password,
-            });
-
-            const cognitoUser = new CognitoUser({
-                Username,
-                Pool,
-            });
+        return new Promise((resolve, reject) => {
+            const authDetails = new AuthenticationDetails({ Username, Password });
+            const cognitoUser = new CognitoUser({ Username, Pool });
 
             cognitoUser.authenticateUser(authDetails, {
                 onSuccess: (session) => {
@@ -76,8 +69,8 @@ const Account = (props) => {
                     resolve(data)
                 }
             });
-        })
-    }
+        });
+    };
 
     const logout = () => {
         const user = Pool.getCurrentUser();
@@ -87,12 +80,46 @@ const Account = (props) => {
         }
     }
 
+    const refreshSession = () => {
+        return new Promise((resolve, reject) => {
+            const user = Pool.getCurrentUser();
+            if (!user) return reject("No user logged in");
+
+            user.getSession((err, session) => {
+                if (err) return reject(err);
+                resolve(session);
+            });
+        });
+    };
+
+    const getUserAttributes = () => {
+        return new Promise((resolve, reject) => {
+            const user = Pool.getCurrentUser();
+            if (!user) return reject("No user logged in");
+
+            user.getSession((err, session) => {
+                if (err) return reject(err);
+
+                user.getUserAttributes((err, attributes) => {
+                    if (err) return reject(err);
+                    const result = {};
+                    attributes.forEach(attr => (result[attr.getName()] = attr.getValue()));
+                    // Also include username from ID token
+                    result["cognito:username"] = session.getIdToken().payload["cognito:username"];
+                    resolve(result);
+                });
+            });
+        });
+    };
+
     return (
-        <AccountContext.Provider value={{ authenticate, getSession, logout, user, isLoading }}>
+        <AccountContext.Provider
+            value={{ authenticate, getSession, logout, user, isLoading, refreshSession, getUserAttributes }}
+        >
             {props.children}
         </AccountContext.Provider>
-    )
-}
+    );
+};
 
 const useAccount = () => useContext(AccountContext);
 

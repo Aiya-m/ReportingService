@@ -131,25 +131,49 @@ function Home() {
             return;
         }
 
-        const watchId = navigator.geolocation.watchPosition(
-            (position) => {
-                const { latitude, longitude } = position.coords;
-                setUserLocation([longitude, latitude]);
-                console.log([latitude, longitude])
+        let watchId;
 
-                if (mapRef.current) {
-                    mapRef.current.jumpTo({
-                        center: [longitude, latitude],
-                        zoom: 16
-                    });
+        const startWatch = (highAccuracy) => {
+            console.log(`📍 Starting geolocation (high accuracy: ${highAccuracy})`);
+
+            watchId = navigator.geolocation.watchPosition(
+                (position) => {
+                    const { latitude, longitude } = position.coords;
+                    setUserLocation([longitude, latitude]);
+                    console.log("✅ Location:", { latitude, longitude });
+
+                    if (mapRef.current) {
+                        mapRef.current.jumpTo({
+                            center: [longitude, latitude],
+                            zoom: 16
+                        });
+                    }
+                },
+                (error) => {
+                    console.error("⚠️ Geolocation watch error:", error);
+
+                    // Fallback if high accuracy caused an issue
+                    if (highAccuracy && error.code === error.TIMEOUT) {
+                        console.log("⏳ Retrying with enableHighAccuracy: false");
+                        navigator.geolocation.clearWatch(watchId);
+                        startWatch(false);
+                    }
+                },
+                {
+                    enableHighAccuracy: highAccuracy,
+                    maximumAge: 10000,
+                    timeout: 10000,
                 }
+            );
+        };
 
-            },
-            (error) => console.error("Geolocation watch error:", error),
-            { enableHighAccuracy: false, maximumAge: 10000, timeout: 10000 }
-        );
+        // Start with high accuracy first
+        startWatch(true);
 
-        return () => navigator.geolocation.clearWatch(watchId);
+        // Cleanup watcher when unmounted
+        return () => {
+            if (watchId) navigator.geolocation.clearWatch(watchId);
+        };
     }, []);
 
     // Check if user in any circles
@@ -190,7 +214,7 @@ function Home() {
                         </div>
                     </div>
                     <Map
-                        ref={mapRef} // ✅ this gives direct control
+                        ref={mapRef}
                         initialViewState={{ ...viewState }}
                         onMove={(evt) => setViewState(evt.viewState)}
                         mapStyle="https://tiles.openfreemap.org/styles/liberty"
