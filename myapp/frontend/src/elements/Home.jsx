@@ -29,6 +29,8 @@ function Home() {
     const [insideCircle, setInsideCircle] = React.useState(false);
     
     const [showPopup, setShowPopup] = React.useState(false);
+    const [selectedEmergency, setSelectedEmergency] = React.useState(null);
+    const [showConfirm, setShowConfirm] = React.useState(false);
 
     React.useEffect(() => {
         const timerID = setInterval(() => {
@@ -186,7 +188,7 @@ function Home() {
                 <div className="absolute bottom-0 w-full flex-shrink-0">
                     <BottomNavbar />
                 </div>
-                {showPopup && (
+                {showPopup && !showConfirm && (
                     <div className="absolute inset-0 backdrop-blur-sm flex items-center justify-center z-50">
                         <div className="bg-white p-6 rounded-xl shadow-xl w-80 text-center">
                         <h2 className="text-xl font-semibold mb-3">แจ้งเหตุฉุกเฉิน</h2>
@@ -205,8 +207,8 @@ function Home() {
                                 key={index}
                                 className="flex items-center justify-center gap-2 bg-red-600 text-white px-4 py-2 rounded-lg hover:bg-red-700 transition"
                                 onClick={() => {
-                                console.log(`เลือกเหตุฉุกเฉิน: ${item.label}`);
-                                setShowPopup(false);
+                                setSelectedEmergency(item.label);
+                                setShowConfirm(true); // เปิด Popup ยืนยัน
                                 }}
                             >
                                 {item.icon}
@@ -217,6 +219,33 @@ function Home() {
                             <button
                             className="bg-gray-400 text-white px-4 py-2 rounded-lg"
                             onClick={() => setShowPopup(false)}
+                            >
+                            ยกเลิก
+                            </button>
+                        </div>
+                        </div>
+                    </div>
+                    )}
+
+                    {showConfirm && (
+                    <div className="absolute inset-0 backdrop-blur-sm flex items-center justify-center z-50">
+                        <div className="bg-white p-6 rounded-xl shadow-xl w-80 text-center">
+                        <h2 className="text-xl font-semibold mb-3">ยืนยันการแจ้งเหตุฉุกเฉิน</h2>
+                        <p className="mb-4">คุณต้องการแจ้งเหตุ "{selectedEmergency}" ใช่หรือไม่?</p>
+                        <div className="flex justify-center gap-4">
+                            <button
+                            className="bg-green-600 text-white px-4 py-2 rounded-lg hover:bg-green-700"
+                            onClick={() => {
+                                console.log(`ยืนยันแจ้งเหตุ: ${selectedEmergency}`);
+                                setShowConfirm(false);
+                                setShowPopup(false);
+                            }}
+                            >
+                            ยืนยัน
+                            </button>
+                            <button
+                            className="bg-gray-400 text-white px-4 py-2 rounded-lg hover:bg-gray-500"
+                            onClick={() => setShowConfirm(false)}
                             >
                             ยกเลิก
                             </button>

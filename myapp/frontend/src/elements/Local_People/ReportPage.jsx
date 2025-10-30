@@ -1,9 +1,11 @@
-import React, { useState } from "react";
+import React, { useContext, useState, useEffect } from "react";
 import { useNavigate } from 'react-router-dom';
 import useMutation from "../../hooks/useMutation";
 import { ArrowLeft, Image as ImageIcon } from "lucide-react";
 import BottomNavbar from "./Nav";
 import { destination } from "@turf/turf";
+import { AccountContext } from "../Account";
+
 
 const validFileType = ['image/png', 'image/jpeg', 'image/png']
 const URL = "/images"
@@ -19,6 +21,24 @@ const Report = () => {
         agency: "",
         situation_img: "",
     });
+
+    const [first_name, setFirstName] = useState('');
+    const [last_name, setLastName] = useState('');
+    const [phone_number, setPhoneNumber] = useState('');
+    const { getSession } = useContext(AccountContext)
+
+    useEffect(() => {
+        getSession().then((session) => {
+            console.log("session: ", session);
+            const payload = session.getIdToken().payload;
+            setFirstName(payload.given_name)
+            setLastName(payload.family_name)
+            setPhoneNumber(payload.phone_number)
+        })
+            .catch((err) => {
+                console.log("Failed to get session: ", err)
+            });
+    }, [getSession]);
 
     const [error, setError] = useState('');
     const { mutate: uploadImage, isLoading: uploading, error: uploadError } = useMutation({ url: URL })
@@ -50,12 +70,16 @@ const Report = () => {
         e.preventDefault();
 
         try {
+            const token = localStorage.getItem("cognitoToken");
+
             const response = await fetch("http://localhost:5000/report-page", {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
                 body: JSON.stringify({
+                    first_name: first_name,
+                    last_name: last_name,
                     description: form.detail,
-                    phone_number: form.phone_num,
+                    phone_number: phone_number,
                     address: form.address,
                     title: form.agency
                 })
@@ -107,6 +131,7 @@ const Report = () => {
                                 value={form.phone_num}
                                 onChange={handleChange}
                                 className="w-full border rounded-md p-2 mt-1 focus:outline-none focus:ring-2 focus:ring-orange-400"
+                                defaultValue={phone_number}
                             />
                         </div>
 

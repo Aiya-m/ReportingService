@@ -37,6 +37,8 @@ const db = mysql.createPool({
   port: process.env.DB_PORT || 3306,
 });
 
+const promisePool = db.promise();
+
 db.getConnection((err, connection) => {
   if (err) {
     console.error("Database connection failed:", err.message);
@@ -47,16 +49,16 @@ db.getConnection((err, connection) => {
 });
 
 app.post("/report-page", async (req, res) => {
-  const { description, phone_number, address, title } = req.body;
+  const { first_name, last_name, description, phone_number, address, title } = req.body;
 
   if (!description || !phone_number || !address || !title) {
     return res.status(400).json({ message: "กรอกข้อมูลให้ครบ" });
   }
 
   try {
-    const[result] = await db.execute(
-      `INSERT INTO reports (description, phone_number, address, title) VALUES (?, ?, ?, ?)`,
-      [description, phone_number, address, title]
+    const[result] = await promisePool.execute(
+      `INSERT INTO Report (first_name, last_name, description, phone_number, address, title) VALUES (?, ?, ?, ?, ?, ?)`,
+      [first_name, last_name, description, phone_number, address, title]
     );
     res.status(200).json({ message: "บันทึกข้อมูลเรียบร้อย", reportId: result.insertId })
   } catch (err){
