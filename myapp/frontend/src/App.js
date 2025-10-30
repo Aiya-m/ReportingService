@@ -16,6 +16,7 @@ import ReportComplete from './elements/Officer/reportcomplete'
 import Login from './elements/loginPage';
 import Confirmation from './elements/ConfirmRegister';
 import Forgotpassword from './elements/Forgotpassword';
+import ReportInfo from './elements/Officer/reportInfo'
 
 function App() {
 
@@ -47,6 +48,7 @@ function App() {
         <Route path='/report-incoming' element={<ReportIncome />} />
         <Route path='/report-in-progress' element={<ReportProgress />} />
         <Route path='/report-complete' element={<ReportComplete />} />
+        <Route path="/report-incoming/:id" element={<ReportInfo />} />
       </Routes>
     </BrowserRouter>
     // <div>
