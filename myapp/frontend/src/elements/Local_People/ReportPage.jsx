@@ -22,8 +22,8 @@ const Report = () => {
         situation_img: "",
     });
 
-    const [first_name, setFirstName] = useState('');
-    const [last_name, setLastName] = useState('');
+    const [firstname, setFirstName] = useState('');
+    const [lastname, setLastName] = useState('');
     const [phone_number, setPhoneNumber] = useState('');
     const { getSession } = useContext(AccountContext)
 
@@ -72,12 +72,12 @@ const Report = () => {
         try {
             const token = localStorage.getItem("cognitoToken");
 
-            const response = await fetch("http://localhost:5000/report-page", {
+            const response = await fetch("http://44.220.134.131:3000/report-page", {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
                 body: JSON.stringify({
-                    first_name: first_name,
-                    last_name: last_name,
+                    firstname: firstname,
+                    lastname: lastname,
                     description: form.detail,
                     phone_number: phone_number,
                     address: form.address,
