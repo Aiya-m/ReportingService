@@ -1,53 +1,51 @@
-import React, { useState } from "react";
+import React, { useState, useEffect, useContext } from "react";
 import { useNavigate } from 'react-router-dom';
 import { ArrowLeft, Clock, MapPin, FileText } from "lucide-react";
 import BottomNavbar from "./Nav";
+import { AccountContext } from "../Account";
 
 const ReportHistory = () => {
     const navigate = useNavigate();
+    const { getSession } = useContext(AccountContext);
 
-    const [historyData, setHistoryData] = useState([
-        {
-            id: 1,
-            title: "ไฟไหม้ที่ตลาด",
-            location: "ถนนประชาอุทิศ ซอย 90",
-            date: "28 ต.ค. 2025",
-            time: "19:45 น.",
-            status: "ดำเนินการแล้ว",
-        },
-        {
-            id: 2,
-            title: "น้ำท่วมในซอย",
-            location: "ลาดพร้าว 101",
-            date: "25 ต.ค. 2025",
-            time: "21:10 น.",
-            status: "กำลังตรวจสอบ",
-        },
-        {
-            id: 3,
-            title: "หมาโดนรถชน",
-            location: "หน้ามหาวิทยาลัย",
-            date: "20 ต.ค. 2025",
-            time: "14:22 น.",
-            status: "ดำเนินการแล้ว",
-        },
-        {
-            id: 4,
-            title: "ไฟไหม้โกดัง",
-            location: "พระราม 2 ซอย 69",
-            date: "15 ต.ค. 2025",
-            time: "10:05 น.",
-            status: "ดำเนินการแล้ว",
-        },
-        {
-            id: 5,
-            title: "อุบัติเหตุรถชน",
-            location: "สุขุมวิท 77",
-            date: "12 ต.ค. 2025",
-            time: "08:30 น.",
-            status: "ดำเนินการแล้ว",
-        },
-    ]);
+    const [firstname, setFirstName] = useState('');
+    const [lastname, setLastName] = useState('');
+    const [historyData, setHistoryData] = useState([]);
+    const [loading, setLoading] = useState(true);
+
+    useEffect(() => {
+        getSession()
+            .then((session) => {
+                const payload = session.getIdToken().payload;
+                setFirstName(payload.given_name);
+                setLastName(payload.family_name);
+            })
+            .catch((err) => console.error("Session Error:", err));
+    }, [getSession]);
+
+    useEffect(() => {
+        if (!firstname || !lastname) return;
+
+        const fetchHistory = async () => {
+            try {
+                const res = await fetch(
+                    `http://52.87.254.106:5000/reports?firstname=${firstname}&lastname=${lastname}`
+                );
+                const data = await res.json();
+                if (res.ok) {
+                    setHistoryData(data.reports);
+                } else {
+                    console.error("Fetch error:", data.message);
+                }
+            } catch (err) {
+                console.error("Error fetching report history:", err);
+            } finally {
+                setLoading(false);
+            }
+        };
+
+        fetchHistory();
+    }, [firstname, lastname]);
 
     return (
         <div className="flex justify-center bg-gray-200 min-h-screen">
@@ -61,7 +59,9 @@ const ReportHistory = () => {
                 </div>
 
                 <div className="flex-grow overflow-y-auto px-4 py-3 space-y-3">
-                    {historyData.length > 0 ? (
+                    {loading ? (
+                        <p className="text-center text-gray-500 mt-10">กำลังโหลดข้อมูล...</p>
+                    ) : historyData.length > 0 ? (
                         historyData.map((item) => (
                             <div
                                 key={item.id}
@@ -70,15 +70,15 @@ const ReportHistory = () => {
                                 <h2 className="font-semibold text-lg text-gray-800">{item.title}</h2>
                                 <div className="text-sm text-gray-600 mt-1 flex items-center">
                                     <MapPin size={14} className="mr-1 text-orange-500" />
-                                    {item.location}
+                                    {item.address || "-"}
                                 </div>
                                 <div className="flex items-center text-sm text-gray-600 mt-1">
                                     <Clock size={14} className="mr-1 text-orange-500" />
-                                    {item.date} • {item.time}
+                                    {item.date || "-"} • {item.time || ""}
                                 </div>
                                 <div className="mt-2 flex items-center justify-between">
                                     <span className="text-xs bg-orange-100 text-orange-700 px-2 py-1 rounded-full">
-                                        {item.status}
+                                        {item.status || "รอดำเนินการ"}
                                     </span>
                                     <button className="text-xs flex items-center text-blue-600 hover:underline">
                                         <FileText size={14} className="mr-1" /> รายละเอียด

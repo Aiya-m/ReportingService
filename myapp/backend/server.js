@@ -68,7 +68,7 @@ app.post("/report-page", async (req, res) => {
   console.log("📦 req.body =", req.body);
 });
 
-app.post("/report-page", async (req, res) => {
+app.post("/", async (req, res) => {
   const { firstname, lastname, phone_number, latitude, longitude, is_emergency, title, description } = req.body;
 
   if (!firstname || !lastname || !phone_number || !latitude || !longitude || !title) {
@@ -87,6 +87,27 @@ app.post("/report-page", async (req, res) => {
   }
   console.log("📦 req.body =", req.body);
 });
+
+app.get("/reports", async (req, res) => {
+  const { firstname, lastname } = req.query;
+
+  if (!firstname || !lastname) {
+    return res.status(400).json({ message: "ต้องระบุ firstname และ lastname" });
+  }
+
+  try {
+    const [rows] = await promisePool.execute(
+      "SELECT id, title, address, status, DATE_FORMAT(created_at, '%d %b %Y') as date, TIME_FORMAT(created_at, '%H:%i น.') as time FROM Report WHERE firstname = ? AND lastname = ? ORDER BY created_at DESC",
+      [firstname, lastname]
+    );
+
+    res.status(200).json({ reports: rows });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ message: "เกิดข้อผิดพลาดในการดึงข้อมูล" });
+  }
+});
+
 
 app.get("/", (req, res) => {
   res.send("Hello from backend");
