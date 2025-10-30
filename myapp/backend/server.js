@@ -11,7 +11,9 @@ import {
     AdminDeleteUserCommand
 } from "@aws-sdk/client-cognito-identity-provider";
 
-// const { uploadToS3 } = require("./s3");
+import { uploadToS3 } from "./s3.js";
+
+dotenv.config();
 const app = express();
 const PORT = 5000;
 app.use(cors({ origin: "http://localhost:3000" }));
@@ -41,6 +43,8 @@ const db = mysql.createPool({
   database: process.env.DB_NAME,
   port: process.env.DB_PORT || 3306,
 });
+
+const promisePool = db.promise();
 
 db.getConnection((err, connection) => {
   if (err) {
@@ -89,17 +93,84 @@ const transformCognitoUser = (cognitoUser, Role) => {
   }
   return null;
 };
+app.post("/report-page", async (req, res) => {
+  const { firstname, lastname, description, phone_number, address, title } = req.body;
 
-app.get("/", (req, res) => {
-  res.send("Hello from backend");
+  if (!description || !phone_number || !address || !title) {
+    return res.status(400).json({ message: "กรอกข้อมูลให้ครบ" });
+  }
+
+  try {
+    const [result] = await promisePool.execute(
+      `INSERT INTO Report (firstname, lastname, description, phone_number, address, title) VALUES (?, ?, ?, ?, ?, ?)`,
+      [firstname, lastname, description, phone_number, address, title]
+    );
+    res.status(200).json({ message: "บันทึกข้อมูลเรียบร้อย", reportId: result.insertId })
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ message: "เกิดข้อผิดพลาด" });
+  }
+  console.log("📦 req.body =", req.body);
+});
+
+app.post("/", async (req, res) => {
+  const { firstname, lastname, phone_number, latitude, longitude, is_emergency, title, description } = req.body;
+
+  if (!firstname || !lastname || !phone_number || !latitude || !longitude || !title) {
+    return res.status(400).json({ message: "กรอกข้อมูลให้ครบ" });
+  }
+
+  try {
+    const [result] = await promisePool.execute(
+      `INSERT INTO Report (firstname, lastname, phone_number, latitude, longitude, is_emergency, title, description) VALUES (?, ?, ?, ?, ?, ?, ?, ?)`,
+      [firstname, lastname, phone_number, latitude, longitude, is_emergency, title, description]
+    );
+    res.status(200).json({ message: "บันทึกข้อมูลเรียบร้อย", reportId: result.insertId });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ message: "เกิดข้อผิดพลาด" });
+  }
+  console.log("📦 req.body =", req.body);
+});
+
+app.get("/reports", async (req, res) => {
+  const { firstname, lastname } = req.query;
+
+  if (!firstname || !lastname) {
+    return res.status(400).json({ message: "ต้องระบุ firstname และ lastname" });
+  }
+
+  try {
+    const [rows] = await promisePool.execute(
+      "SELECT id, title, address, status, DATE_FORMAT(created_at, '%d %b %Y') as date, TIME_FORMAT(created_at, '%H:%i น.') as time FROM Report WHERE firstname = ? AND lastname = ? ORDER BY created_at DESC",
+      [firstname, lastname]
+    );
+
+    res.status(200).json({ reports: rows });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ message: "เกิดข้อผิดพลาดในการดึงข้อมูล" });
+  }
+});
+
+app.get("/reports/pending", async (req, res) => {
+  try {
+    const [rows] = await promisePool.execute(
+      "SELECT id, title, address, status, DATE_FORMAT(created_at, '%d %b %Y') as date, TIME_FORMAT(created_at, '%H:%i น.') as time FROM Report WHERE status = 'รอดำเนินการ' ORDER BY created_at DESC"
+    );
+    res.status(200).json({ reports: rows });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ message: "เกิดข้อผิดพลาดในการดึงข้อมูล" });
+  }
 });
 
 app.get("/api", (req, res) => {
-  res.json({"users": ["userOne", "userTwo", "userThree"]})
+  res.json({ "users": ["userOne", "userTwo", "userThree"] })
 })
 
-app.get("/caution_position", (req, res) => {    
-  res.json({"locations": [[100.7887341, 13.7348824], [98.9792, 18.7961], [102.839, 16.4419]]})
+app.get("/caution_position", (req, res) => {
+  res.json({ "locations": [[100.7887341, 13.7348824], [98.9792, 18.7961], [102.839, 16.4419]] })
 })
 
 app.get("/get-departments-list", (req, res) => {

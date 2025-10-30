@@ -1,8 +1,11 @@
-import React, { useState } from "react";
+import React, { useContext, useState, useEffect } from "react";
 import { useNavigate } from 'react-router-dom';
 import useMutation from "../../hooks/useMutation";
 import { ArrowLeft, Image as ImageIcon } from "lucide-react";
 import BottomNavbar from "./Nav";
+import { destination } from "@turf/turf";
+import { AccountContext } from "../Account";
+
 
 const validFileType = ['image/png', 'image/jpeg', 'image/png']
 const URL = "/images"
@@ -18,6 +21,24 @@ const Report = () => {
         agency: "",
         situation_img: "",
     });
+
+    const [firstname, setFirstName] = useState('');
+    const [lastname, setLastName] = useState('');
+    const [phone_number, setPhoneNumber] = useState('');
+    const { getSession } = useContext(AccountContext)
+
+    useEffect(() => {
+        getSession().then((session) => {
+            console.log("session: ", session);
+            const payload = session.getIdToken().payload;
+            setFirstName(payload.given_name)
+            setLastName(payload.family_name)
+            setPhoneNumber(payload.phone_number)
+        })
+            .catch((err) => {
+                console.log("Failed to get session: ", err)
+            });
+    }, [getSession]);
 
     const [error, setError] = useState('');
     const { mutate: uploadImage, isLoading: uploading, error: uploadError } = useMutation({ url: URL })
@@ -45,9 +66,36 @@ const Report = () => {
         setFileName(file.name);
     };
 
-    const handleSubmit = (e) => {
+    const handleSubmit = async (e) => {
         e.preventDefault();
-        console.log(form);
+
+        try {
+            const token = localStorage.getItem("cognitoToken");
+
+            const response = await fetch("http://44.220.134.131:3000/report-page", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({
+                    firstname: firstname,
+                    lastname: lastname,
+                    description: form.detail,
+                    phone_number: phone_number,
+                    address: form.address,
+                    title: form.agency
+                })
+            });
+
+            const data = await response.json();
+            if (response.ok) {
+                alert("บันทึกเรียบร้อย! ID: " + data.reportId);
+                navigate(-1);
+            } else {
+                alert("เกิดข้อผิดพลาด: " + data.message);
+            }
+        } catch (err) {
+            console.error(err);
+            alert("เกิดข้อผิดพลาดระหว่างเชื่อมต่อเซิร์ฟเวอร์");
+        }
     };
 
     return (
@@ -83,6 +131,7 @@ const Report = () => {
                                 value={form.phone_num}
                                 onChange={handleChange}
                                 className="w-full border rounded-md p-2 mt-1 focus:outline-none focus:ring-2 focus:ring-orange-400"
+                                defaultValue={phone_number}
                             />
                         </div>
 
@@ -98,15 +147,25 @@ const Report = () => {
                         </div>
 
                         <div>
-                            <label className="text-sm text-gray-700">เลือกหน่วยงาน</label>
-                            <input
-                                type="text"
+                            <label className="text-sm text-gray-700">ประเภทอุบัติเหตุ</label>
+                            <select
                                 name="agency"
                                 value={form.agency}
                                 onChange={handleChange}
                                 className="w-full border rounded-md p-2 mt-1 focus:outline-none focus:ring-2 focus:ring-orange-400"
-                            />
+                            >
+                                <option value="">ปัญหาทั่วไป</option>
+                                <option value="ไฟไหม้">ไฟไหม้</option>
+                                <option value="อุบัติเหตุท้องถนน">อุบัติเหตุรถ</option>
+                                <option value="บาดเจ็บ/ป่วยฉุกเฉินม">บาดเจ็บ/ป่วยฉุกเฉิน</option>
+                                <option value="ทะเลาะวิวาท">ทะเลาะวิวาท</option>
+                                <option value="สัตว์อันตราย">สัตว์อันตราย</option>
+                                <option value="ไฟดับ">ไฟดับ</option>
+                                <option value="น้ำไม่ไหล">น้ำไม่ไหล</option>
+                                <option value="โจรกรรม">โจรกรรม</option>
+                            </select>
                         </div>
+
 
                         <div>
                             <label className="text-sm text-gray-700">แนบรูปประกอบ</label>

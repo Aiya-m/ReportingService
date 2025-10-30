@@ -2,9 +2,9 @@ import React, { useState } from "react";
 import { useNavigate } from 'react-router-dom';
 import useMutation from "../../hooks/useMutation";
 import { ArrowLeft, Image as ImageIcon } from "lucide-react";
-import BottomNavbar from "./Nav";
+import OfficerNavbar from "./officerNav";
 
-const ManageProfile = () => {
+const ReportInfo = () => {
     const navigate = useNavigate();
 
     return (
@@ -19,15 +19,15 @@ const ManageProfile = () => {
                 
                 <div className="flex-grow overflow-y-auto">
                     <h1>
-                        this is manage profile page
+                        this is report info
                     </h1>
                 </div>
                 <div className="absolute bottom-0 w-full flex-shrink-0">
-                    <BottomNavbar />
+                    <OfficerNavbar />
                 </div>
             </div>
         </div>
     );
 };
 
-export default ManageProfile;
+export default ReportInfo;
