@@ -1,4 +1,5 @@
 import * as React from "react";
+import { useContext, useState, useEffect } from "react";
 import { Map, Popup, Source, Layer, Marker } from "@vis.gl/react-maplibre";
 import "maplibre-gl/dist/maplibre-gl.css";
 import * as turf from "@turf/turf";
@@ -8,6 +9,7 @@ import BottomNavbar from "./Local_People/Nav";
 import { ArrowLeft, Image as ImageIcon } from "lucide-react";
 import Status from './Status'
 import { Flame, Car, Ambulance, Angry, PawPrint, LightbulbOff, DropletOff, HatGlasses } from 'lucide-react';
+import { AccountContext } from "./Account";
 
 function Home() {
     const mapRef = React.useRef(null);
@@ -27,10 +29,63 @@ function Home() {
     const [circlesData, setCirclesData] = React.useState(null);
 
     const [insideCircle, setInsideCircle] = React.useState(false);
-    
+
     const [showPopup, setShowPopup] = React.useState(false);
     const [selectedEmergency, setSelectedEmergency] = React.useState(null);
     const [showConfirm, setShowConfirm] = React.useState(false);
+
+    const [firstname, setFirstName] = useState('');
+    const [lastname, setLastName] = useState('');
+    const [phone_number, setPhoneNumber] = useState('');
+    const { getSession } = useContext(AccountContext)
+
+    useEffect(() => {
+        getSession().then((session) => {
+            console.log("session: ", session);
+            const payload = session.getIdToken().payload;
+            setFirstName(payload.given_name)
+            setLastName(payload.family_name)
+            setPhoneNumber(payload.phone_number)
+        })
+            .catch((err) => {
+                console.log("Failed to get session: ", err)
+            });
+    }, [getSession]);
+
+    const sendEmergencyReport = async () => {
+        try {
+            const payload = {
+                firstname,
+                lastname,
+                phone_number,
+                latitude: userLocation[1],
+                longitude: userLocation[0],
+                is_emergency: 1,
+                title: selectedEmergency,
+                description: selectedEmergency
+            };
+
+            const res = await fetch("http://52.87.254.106:3000/", {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json",
+                },
+                body: JSON.stringify(payload),
+            });
+
+            const data = await res.json();
+            if (res.ok) {
+                console.log("ส่งเหตุฉุกเฉินเรียบร้อย:", data);
+                alert("ส่งเหตุฉุกเฉินเรียบร้อย!");
+            } else {
+                console.error("เกิดข้อผิดพลาด:", data.message);
+                alert("ส่งข้อมูลล้มเหลว: " + data.message);
+            }
+        } catch (err) {
+            console.error("เกิดข้อผิดพลาด:", err);
+            alert("เกิดข้อผิดพลาดในการส่งข้อมูล");
+        }
+    };
 
     React.useEffect(() => {
         const timerID = setInterval(() => {
@@ -114,23 +169,23 @@ function Home() {
             <div className="relative w-full max-w-sm sm:max-w-md bg-white shadow-lg rounded-lg overflow-y-auto max-h-screen">
                 <div className="flex items-center bg-orange-500 text-white px-4 py-3">
                     <h1 className="text-lg font-bold">ResQ</h1>
-                    <Status/>
+                    <Status />
                 </div>
 
                 <div className="relative h-[525px]">
                     <div className="absolute top-0 left-0 right-0 z-10 text-center py-2 mt-4">
                         <div className="text-center text-gray-700 mt-4 drop-shadow-xl">
                             <p className="text-4xl font-medium"> {currentTime.toLocaleTimeString('th-TH', {
-                                    hour: '2-digit',
-                                    minute: '2-digit',
-                                })} น.
+                                hour: '2-digit',
+                                minute: '2-digit',
+                            })} น.
                             </p>
                             <p className="text-xl mt-1 text-gray-600"> {currentTime.toLocaleDateString('th-TH', {
-                                    weekday: 'long',
-                                    day: 'numeric',
-                                    month: 'long',
-                                    year: 'numeric',
-                                })}
+                                weekday: 'long',
+                                day: 'numeric',
+                                month: 'long',
+                                year: 'numeric',
+                            })}
                             </p>
                         </div>
                     </div>
@@ -191,68 +246,69 @@ function Home() {
                 {showPopup && !showConfirm && (
                     <div className="absolute inset-0 backdrop-blur-sm flex items-center justify-center z-50">
                         <div className="bg-white p-6 rounded-xl shadow-xl w-80 text-center">
-                        <h2 className="text-xl font-semibold mb-3">แจ้งเหตุฉุกเฉิน</h2>
-                        <div className="flex flex-col justify-center gap-3">
-                            {[
-                            { label: "ไฟไหม้", icon: <Flame size={20} /> },
-                            { label: "อุบัติเหตุท้องถนน", icon: <Car size={20} /> },
-                            { label: "บาดเจ็บ/ป่วยฉุกเฉิน", icon: <Ambulance size={20} /> },
-                            { label: "ทะเลาะวิวาท", icon: <Angry size={20} /> },
-                            { label: "สัตว์อันตราย", icon: <PawPrint size={20} /> },
-                            { label: "ไฟดับ", icon: <LightbulbOff size={20} /> },
-                            { label: "น้ำไม่ไหล", icon: <DropletOff size={20} /> },
-                            { label: "โจรกรรม", icon: <HatGlasses size={20} /> },
-                            ].map((item, index) => (
-                            <button
-                                key={index}
-                                className="flex items-center justify-center gap-2 bg-red-600 text-white px-4 py-2 rounded-lg hover:bg-red-700 transition"
-                                onClick={() => {
-                                setSelectedEmergency(item.label);
-                                setShowConfirm(true); // เปิด Popup ยืนยัน
-                                }}
-                            >
-                                {item.icon}
-                                <span>{item.label}</span>
-                            </button>
-                            ))}
+                            <h2 className="text-xl font-semibold mb-3">แจ้งเหตุฉุกเฉิน</h2>
+                            <div className="flex flex-col justify-center gap-3">
+                                {[
+                                    { label: "ไฟไหม้", icon: <Flame size={20} /> },
+                                    { label: "อุบัติเหตุท้องถนน", icon: <Car size={20} /> },
+                                    { label: "บาดเจ็บ/ป่วยฉุกเฉิน", icon: <Ambulance size={20} /> },
+                                    { label: "ทะเลาะวิวาท", icon: <Angry size={20} /> },
+                                    { label: "สัตว์อันตราย", icon: <PawPrint size={20} /> },
+                                    { label: "ไฟดับ", icon: <LightbulbOff size={20} /> },
+                                    { label: "น้ำไม่ไหล", icon: <DropletOff size={20} /> },
+                                    { label: "โจรกรรม", icon: <HatGlasses size={20} /> },
+                                ].map((item, index) => (
+                                    <button
+                                        key={index}
+                                        className="flex items-center justify-center gap-2 bg-red-600 text-white px-4 py-2 rounded-lg hover:bg-red-700 transition"
+                                        onClick={() => {
+                                            setSelectedEmergency(item.label);
+                                            setShowConfirm(true); // เปิด Popup ยืนยัน
+                                        }}
+                                    >
+                                        {item.icon}
+                                        <span>{item.label}</span>
+                                    </button>
+                                ))}
 
-                            <button
-                            className="bg-gray-400 text-white px-4 py-2 rounded-lg"
-                            onClick={() => setShowPopup(false)}
-                            >
-                            ยกเลิก
-                            </button>
-                        </div>
+                                <button
+                                    className="bg-gray-400 text-white px-4 py-2 rounded-lg"
+                                    onClick={() => setShowPopup(false)}
+                                >
+                                    ยกเลิก
+                                </button>
+                            </div>
                         </div>
                     </div>
-                    )}
+                )}
 
-                    {showConfirm && (
+                {showConfirm && (
                     <div className="absolute inset-0 backdrop-blur-sm flex items-center justify-center z-50">
                         <div className="bg-white p-6 rounded-xl shadow-xl w-80 text-center">
-                        <h2 className="text-xl font-semibold mb-3">ยืนยันการแจ้งเหตุฉุกเฉิน</h2>
-                        <p className="mb-4">คุณต้องการแจ้งเหตุ "{selectedEmergency}" ใช่หรือไม่?</p>
-                        <div className="flex justify-center gap-4">
-                            <button
-                            className="bg-green-600 text-white px-4 py-2 rounded-lg hover:bg-green-700"
-                            onClick={() => {
-                                console.log(`ยืนยันแจ้งเหตุ: ${selectedEmergency}`);
-                                setShowConfirm(false);
-                                setShowPopup(false);
-                            }}
-                            >
-                            ยืนยัน
-                            </button>
-                            <button
-                            className="bg-gray-400 text-white px-4 py-2 rounded-lg hover:bg-gray-500"
-                            onClick={() => setShowConfirm(false)}
-                            >
-                            ยกเลิก
-                            </button>
-                        </div>
+                            <h2 className="text-xl font-semibold mb-3">ยืนยันการแจ้งเหตุฉุกเฉิน</h2>
+                            <p className="mb-4">คุณต้องการแจ้งเหตุ "{selectedEmergency}" ใช่หรือไม่?</p>
+                            <div className="flex justify-center gap-4">
+                                <button
+                                    className="bg-gray-400 text-white px-4 py-2 rounded-lg hover:bg-gray-500"
+                                    onClick={() => setShowConfirm(false)}
+                                >
+                                    ยกเลิก
+                                </button>
+                                <button
+                                    className="bg-green-600 text-white px-4 py-2 rounded-lg hover:bg-green-700"
+                                    onClick={() => {
+                                        console.log(`ยืนยันแจ้งเหตุ: ${selectedEmergency}`);
+                                        sendEmergencyReport();
+                                        setShowConfirm(false);
+                                        setShowPopup(false);
+                                    }}
+                                >
+                                    ยืนยัน
+                                </button>
+                            </div>
                         </div>
                     </div>
-                    )}
+                )}
             </div>
         </div>
     );

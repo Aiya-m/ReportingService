@@ -56,12 +56,32 @@ app.post("/report-page", async (req, res) => {
   }
 
   try {
-    const[result] = await promisePool.execute(
+    const [result] = await promisePool.execute(
       `INSERT INTO Report (firstname, lastname, description, phone_number, address, title) VALUES (?, ?, ?, ?, ?, ?)`,
       [firstname, lastname, description, phone_number, address, title]
     );
     res.status(200).json({ message: "บันทึกข้อมูลเรียบร้อย", reportId: result.insertId })
-  } catch (err){
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ message: "เกิดข้อผิดพลาด" });
+  }
+  console.log("📦 req.body =", req.body);
+});
+
+app.post("/report-page", async (req, res) => {
+  const { firstname, lastname, phone_number, latitude, longitude, is_emergency, title, description } = req.body;
+
+  if (!firstname || !lastname || !phone_number || !latitude || !longitude || !title) {
+    return res.status(400).json({ message: "กรอกข้อมูลให้ครบ" });
+  }
+
+  try {
+    const [result] = await promisePool.execute(
+      `INSERT INTO Report (firstname, lastname, phone_number, latitude, longitude, is_emergency, title, description) VALUES (?, ?, ?, ?, ?, ?, ?, ?)`,
+      [firstname, lastname, phone_number, latitude, longitude, is_emergency, title, description]
+    );
+    res.status(200).json({ message: "บันทึกข้อมูลเรียบร้อย", reportId: result.insertId });
+  } catch (err) {
     console.error(err);
     res.status(500).json({ message: "เกิดข้อผิดพลาด" });
   }
@@ -73,11 +93,11 @@ app.get("/", (req, res) => {
 });
 
 app.get("/api", (req, res) => {
-  res.json({"users": ["userOne", "userTwo", "userThree"]})
+  res.json({ "users": ["userOne", "userTwo", "userThree"] })
 })
 
-app.get("/caution_position", (req, res) => {    
-  res.json({"locations": [[100.7887341, 13.7348824], [98.9792, 18.7961], [102.839, 16.4419]]})
+app.get("/caution_position", (req, res) => {
+  res.json({ "locations": [[100.7887341, 13.7348824], [98.9792, 18.7961], [102.839, 16.4419]] })
 })
 
 app.get("/get-departments-list", (req, res) => {
