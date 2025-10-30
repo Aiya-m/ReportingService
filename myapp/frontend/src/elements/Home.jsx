@@ -7,10 +7,12 @@ import { useNavigate } from 'react-router-dom';
 import BottomNavbar from "./Local_People/Nav";
 import { ArrowLeft, Image as ImageIcon } from "lucide-react";
 import Status from './Status'
+import { Flame, Car, Ambulance, Angry, PawPrint, LightbulbOff, DropletOff, HatGlasses } from 'lucide-react';
 
 function Home() {
     const mapRef = React.useRef(null);
     const navigate = useNavigate();
+    const [currentTime, setCurrentTime] = React.useState(new Date());
 
     const [cautionLocations, setCautionLocations] = React.useState([]);
 
@@ -25,6 +27,15 @@ function Home() {
     const [circlesData, setCirclesData] = React.useState(null);
 
     const [insideCircle, setInsideCircle] = React.useState(false);
+    
+    const [showPopup, setShowPopup] = React.useState(false);
+
+    React.useEffect(() => {
+        const timerID = setInterval(() => {
+            setCurrentTime(new Date());
+        }, 1000);
+        return () => clearInterval(timerID);
+    }, []);
 
 
     // fetch to get cautionLocation from server.js
@@ -105,6 +116,22 @@ function Home() {
                 </div>
 
                 <div className="relative h-[525px]">
+                    <div className="absolute top-0 left-0 right-0 z-10 text-center py-2 mt-4">
+                        <div className="text-center text-gray-700 mt-4 drop-shadow-xl">
+                            <p className="text-4xl font-medium"> {currentTime.toLocaleTimeString('th-TH', {
+                                    hour: '2-digit',
+                                    minute: '2-digit',
+                                })} น.
+                            </p>
+                            <p className="text-xl mt-1 text-gray-600"> {currentTime.toLocaleDateString('th-TH', {
+                                    weekday: 'long',
+                                    day: 'numeric',
+                                    month: 'long',
+                                    year: 'numeric',
+                                })}
+                            </p>
+                        </div>
+                    </div>
                     <Map
                         ref={mapRef} // ✅ this gives direct control
                         initialViewState={{ ...viewState }}
@@ -153,12 +180,50 @@ function Home() {
                     </Map>
                 </div>
                 <div className="flex flex-col gap-4 px-4 py-4 bg-white">
-                    <button className="bg-blue-600 text-white py-2 rounded-xl shadow-lg" onClick={() => navigate("/report-page")}>Report</button>
-                    <button className="bg-red-600 text-white py-2 rounded-xl shadow-lg" onClick={() => navigate("/report-form-emergency")}>Emergency Report</button>
+                    <button className="bg-blue-600 text-white py-2 rounded-xl shadow-lg" onClick={() => navigate("/report-page")}>แจ้งเหตุ</button>
+                    <button className="bg-red-600 text-white py-2 rounded-xl shadow-lg" onClick={() => setShowPopup(true)}>แจ้งเหตุฉุกเฉิน</button>
                 </div>
                 <div className="absolute bottom-0 w-full flex-shrink-0">
                     <BottomNavbar />
                 </div>
+                {showPopup && (
+                    <div className="absolute inset-0 backdrop-blur-sm flex items-center justify-center z-50">
+                        <div className="bg-white p-6 rounded-xl shadow-xl w-80 text-center">
+                        <h2 className="text-xl font-semibold mb-3">แจ้งเหตุฉุกเฉิน</h2>
+                        <div className="flex flex-col justify-center gap-3">
+                            {[
+                            { label: "ไฟไหม้", icon: <Flame size={20} /> },
+                            { label: "อุบัติเหตุท้องถนน", icon: <Car size={20} /> },
+                            { label: "บาดเจ็บ/ป่วยฉุกเฉิน", icon: <Ambulance size={20} /> },
+                            { label: "ทะเลาะวิวาท", icon: <Angry size={20} /> },
+                            { label: "สัตว์อันตราย", icon: <PawPrint size={20} /> },
+                            { label: "ไฟดับ", icon: <LightbulbOff size={20} /> },
+                            { label: "น้ำไม่ไหล", icon: <DropletOff size={20} /> },
+                            { label: "โจรกรรม", icon: <HatGlasses size={20} /> },
+                            ].map((item, index) => (
+                            <button
+                                key={index}
+                                className="flex items-center justify-center gap-2 bg-red-600 text-white px-4 py-2 rounded-lg hover:bg-red-700 transition"
+                                onClick={() => {
+                                console.log(`เลือกเหตุฉุกเฉิน: ${item.label}`);
+                                setShowPopup(false);
+                                }}
+                            >
+                                {item.icon}
+                                <span>{item.label}</span>
+                            </button>
+                            ))}
+
+                            <button
+                            className="bg-gray-400 text-white px-4 py-2 rounded-lg"
+                            onClick={() => setShowPopup(false)}
+                            >
+                            ยกเลิก
+                            </button>
+                        </div>
+                        </div>
+                    </div>
+                    )}
             </div>
         </div>
     );
