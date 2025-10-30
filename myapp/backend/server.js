@@ -1,15 +1,17 @@
-require("dotenv").config();
-const express = require("express");
-const cors = require("cors");
-const multer = require("multer");
-const { uploadToS3 } = require("./s3");
-const mysql = require("mysql2");
-require("dotenv").config();
+import bodyParser from "body-parser";
+import express from "express";
+import cors from "cors";
+import dotenv from "dotenv";
+import multer from "multer";
+import mysql from "mysql2";
 
+dotenv.config();
+const { uploadToS3 } = require("./s3");
 const app = express();
 const PORT = 5000;
-app.use(cors({ origin: "*" }));
+app.use(cors({ origin: "http://localhost:3000" }));
 app.use(express.json());
+app.use(bodyParser.json());
 
 const upload = multer({ storage: multer.memoryStorage() });
 

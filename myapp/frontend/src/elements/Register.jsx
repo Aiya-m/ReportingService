@@ -1,10 +1,10 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { useNavigate } from 'react-router-dom';
 import UserPool from "../UserPool";
 import { CognitoUserAttribute } from "amazon-cognito-identity-js";
 import { useForm } from "react-hook-form";
 import { yupResolver } from "@hookform/resolvers/yup";
-import { registerSchema } from "./validationSchema";
+import { userRegisterSchema, officerRegisterSchema } from "./validationSchema";
 
 const BackIcon = () => (
   <svg 
@@ -23,18 +23,51 @@ const BackIcon = () => (
   </svg>
 );
 
+const ToggleSwitch = ({ checked, onChange }) => (
+  <button
+    type="button"
+    onClick={onChange}
+    className={`relative inline-flex items-center h-6 rounded-full w-11 transition-colors ${
+      checked ? 'bg-orange-600' : 'bg-gray-300'
+    }`}
+  >
+    <span
+      className={`inline-block w-4 h-4 transform bg-white rounded-full transition-transform ${
+        checked ? 'translate-x-6' : 'translate-x-1'
+      }`}
+    />
+  </button>
+);
+
 const Register = () => {
   const navigate = useNavigate();
   const [loading, setLoading] = useState(false);
+  const [role, setRole] = useState("localpeople");
+  const [isOfficer, setIsOfficer] = useState(false);
+  const [password, setPassword] = useState("");
+  const [confirmPassword, setConfirmPassword] = useState("");
+
+  const currentSchema = isOfficer ? officerRegisterSchema : userRegisterSchema;
 
   const { 
     register,           // (A) ฟังก์ชันสำหรับผูก input
     handleSubmit,       // (B) ฟังก์ชันสำหรับหุ้ม onSubmit ของ form
     formState: { errors }, // (C) Object ที่เก็บ error ทั้งหมด (มาจาก Yup)
     setError,           // (D) ฟังก์ชันสำหรับตั้ง error จาก Server (Cognito)
+    reset,
   } = useForm({
-    resolver: yupResolver(registerSchema), // (E) บอกให้ใช้กฎจาก Yup
+    resolver: yupResolver(currentSchema), // (E) บอกให้ใช้กฎจาก Yup
   });
+
+  useEffect(() => {
+    if (isOfficer)
+      setRole("officer")
+    reset(); 
+  }, [isOfficer, reset]);
+
+  const handleToggleChange = () => {
+    setIsOfficer(prev => !prev);
+  };
 
   // const handleChange = (e) => {
   //   const { name, value } = e.target;
@@ -49,9 +82,10 @@ const Register = () => {
 
   const onSubmit = (data) => {
     setLoading(true);
-    const userData = {username: data.username, email: data.email}
+    console.log("Submitting data for:", isOfficer ? "Officer" : "User", data);
+    const userData = {username: data.username, email: data.email, role: role}
 
-    // ✅ Cognito needs attributes as "CognitoUserAttribute" objects
+    // Cognito needs attributes as "CognitoUserAttribute" objects
     const attributes = [
       new CognitoUserAttribute({ Name: "email", Value: data.email }),
       new CognitoUserAttribute({ Name: "given_name", Value: data.firstName }),
@@ -59,18 +93,27 @@ const Register = () => {
       new CognitoUserAttribute({ Name: "phone_number", Value: data.phoneNumber }),
       new CognitoUserAttribute({ Name: "custom:address", Value: data.address}),
       new CognitoUserAttribute({ Name: "custom:citizen_id", Value: data.idCard}),
+      new CognitoUserAttribute({ Name: "custom:Role", Value: role}),
     ];
+
+    if (isOfficer) {
+      attributes.push(
+        new CognitoUserAttribute({ Name: "custom:officer_id", Value: data.idOfficer}),
+        new CognitoUserAttribute({ Name: "custom:department", Value: data.department})
+      );
+    }
 
     UserPool.signUp(
       data.username, 
       data.password,
       attributes,
       null,
-      (err, result) => {
+      async (err, result) => {
         setLoading(false);
         if (err) {
           console.error("Signup error:", err);
-          if (err.name === "UsernameExistsException") {
+          console.log(err)
+          if (err.code === "UsernameExistsException") {
             setError("username", { type: "server", message: "ชื่อผู้ใช้นี้มีคนใช้แล้ว" });
           } else if (err.message.toLowerCase().includes("password")) {
             setError("password", { type: "server", message: "รหัสผ่านไม่ตรงตามนโยบาย (เช่น สั้นไป)" });
@@ -85,12 +128,11 @@ const Register = () => {
       }
     );
   };
-  
 
   return (
     <div className="min-h-screen bg-orange-500 p-4 sm:p-6 pb-20 font-sans">
       <div className="relative flex items-center justify-center mb-4 h-10">
-        <button  type="button" className="absolute left-0 bg-white rounded-full p-2 shadow-md hover:bg-gray-100 transition">
+        <button type="button" onClick={() => navigate(-1)} className="absolute left-0 bg-white rounded-full p-2 shadow-md hover:bg-gray-100 transition">
           <BackIcon />
         </button>
         <h1 className="text-4xl font-bold text-white">
@@ -99,8 +141,14 @@ const Register = () => {
       </div>
 
       <h2 className="text-2xl font-bold text-white text-center mb-4">
-        ลงทะเบียนบัญชีผู้ใช้
+        {isOfficer ? "ลงทะเบียนบัญชีเจ้าหน้าที่" : "ลงทะเบียนบัญชีผู้ใช้"}
       </h2>
+
+      <div className="flex items-center justify-center space-x-3 mb-6">
+        <span className="font-medium text-white">ผู้ใช้ทั่วไป</span>
+        <ToggleSwitch checked={isOfficer} onChange={handleToggleChange} />
+        <span className="font-medium text-white">เจ้าหน้าที่</span>
+      </div>
 
       <form onSubmit={handleSubmit(onSubmit)} className="w-full max-w-lg mx-auto space-y-6">
         {errors.general && (
@@ -109,13 +157,13 @@ const Register = () => {
           </p>
         )}
         <div className="bg-orange-100 rounded-2xl p-6 sm:p-8 shadow-lg">
-          <h3 className="text-xl font-bold text-orange-900 mb-5">
+          <h3 className="text-xl font-bold mb-5">
             ข้อมูลส่วนตัว
           </h3>
           <div className="space-y-5">
             <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
               <div>
-                <label htmlFor="firstName" className="block text-sm font-medium text-orange-800 mb-2">
+                <label htmlFor="firstName" className="block font-medium mb-2">
                   ชื่อจริง
                 </label>
                 <input
@@ -129,7 +177,7 @@ const Register = () => {
                 {errors.firstName && <p className="text-red-600 text-sm mt-1">{errors.firstName.message}</p>}
               </div>
               <div>
-                <label htmlFor="lastName" className="block text-sm font-medium text-orange-800 mb-2">
+                <label htmlFor="lastName" className="block font-medium mb-2">
                   นามสกุล
                 </label>
                 <input
@@ -145,7 +193,7 @@ const Register = () => {
             </div>
 
             <div>
-              <label htmlFor="email" className="block text-sm font-medium text-orange-800 mb-2">
+              <label htmlFor="email" className="block font-medium mb-2">
                 อีเมล
               </label>
               <input
@@ -160,7 +208,7 @@ const Register = () => {
             </div>
 
             <div>
-              <label htmlFor="idCard" className="block text-sm font-medium text-orange-800 mb-2">
+              <label htmlFor="idCard" className="block font-medium mb-2">
                 หมายเลขบัตรประชาชน
               </label>
               <input
@@ -175,7 +223,21 @@ const Register = () => {
             </div>
 
             <div>
-              <label htmlFor="address"  className="block text-sm font-medium text-orange-800 mb-2">
+              <label htmlFor="phoneNumber" className="block font-medium mb-2">
+                เบอร์โทร (เช่น +6681234567)
+              </label>
+              <input
+                type="tel"
+                id="phoneNumber"
+                {...register("phoneNumber")}
+                placeholder="+6681234567"
+                className="w-full bg-white rounded-lg border border-gray-300 px-4 py-3 text-gray-900 focus:outline-none focus:ring-2 focus:ring-orange-500"
+              />
+              {errors.phoneNumber && <p className="text-red-600 text-sm mt-1">{errors.phoneNumber.message}</p>}
+            </div>
+
+            <div>
+              <label htmlFor="address"  className="block font-medium mb-2">
                 ที่อยู่ (ไม่จำเป็น)
               </label>
               <textarea
@@ -188,16 +250,49 @@ const Register = () => {
               />
               {errors.address && <p className="text-red-600 text-sm mt-1">{errors.address.message}</p>}
             </div>
+
+            {isOfficer && (
+              <>
+                <hr className="border-t-2 border-orange-200" />
+                <div>
+                  <label htmlFor="idOfficer" className="block font-medium mb-2">
+                    รหัสประจำตัวเจ้าหน้าที่
+                  </label>
+                  <input
+                    type="text"
+                    id="idOfficer"
+                    {...register("idOfficer")}
+                    placeholder="รหัสประจำตัวเจ้าหน้าที่"
+                    className="w-full bg-white rounded-lg border border-gray-300 px-4 py-3 text-gray-900 focus:outline-none focus:ring-2 focus:ring-orange-500"
+                  />
+                  {errors.idOfficer && <p className="text-red-600 text-sm mt-1">{errors.idOfficer.message}</p>}
+                </div>
+
+                <div>
+                  <label htmlFor="department" className="block font-medium mb-2">
+                    หน่วยงานที่สังกัด
+                  </label>
+                  <input
+                    type="text"
+                    id="department"
+                    {...register("department")}
+                    placeholder="หน่วยงานที่สังกัด"
+                    className="w-full bg-white rounded-lg border border-gray-300 px-4 py-3 text-gray-900 focus:outline-none focus:ring-2 focus:ring-orange-500"
+                  />
+                  {errors.department && <p className="text-red-600 text-sm mt-1">{errors.department.message}</p>}
+                </div>
+              </>
+            )}
           </div>
         </div>
 
         <div className="bg-orange-100 rounded-2xl p-6 sm:p-8 shadow-lg">
-          <h3 className="text-xl font-bold text-orange-900 mb-5">
+          <h3 className="text-xl font-bold mb-5">
             ข้อมูลผู้ใช้
           </h3>
           <div className="space-y-5">
             <div>
-              <label htmlFor="username" className="block text-sm font-medium text-orange-800 mb-2">
+              <label htmlFor="username" className="block font-medium mb-2">
                 ชื่อผู้ใช้
               </label>
               <input
@@ -212,16 +307,32 @@ const Register = () => {
             </div>
 
             <div>
-              <label htmlFor="password" className="block text-sm font-medium text-orange-800 mb-2"> รหัสผ่าน </label>
-              <input
-                type="password"
+                <label htmlFor="password" className="block font-medium mb-2">
+                    รหัสผ่าน
+                </label>
+                <input
                 id="password"
-                name="password"
-                {...register("password")}
+                type="password"
                 placeholder="รหัสผ่าน"
+                {...register("password")}
+                required
                 className="w-full bg-white rounded-lg border border-gray-300 px-4 py-3 text-gray-900 focus:outline-none focus:ring-2 focus:ring-orange-500"
-              />
-              {errors.password && <p className="text-red-600 text-sm mt-1">{errors.password.message}</p>}
+                />
+                {errors.password && <p className="text-red-600 text-sm mt-1">{errors.password.message}</p>}
+            </div>
+            <div>
+                <label htmlFor="confirmPassword" className="block font-medium mb-2">
+                  ยืนยันรหัสผ่าน
+                </label>
+                <input
+                id="confirmPassword"
+                type="password"
+                placeholder="ยืนยันรหัสผ่าน"
+                {...register("confirmPassword")}
+                required
+                className="w-full bg-white rounded-lg border border-gray-300 px-4 py-3 text-gray-900 focus:outline-none focus:ring-2 focus:ring-orange-500"
+                />
+                {errors.confirmPassword && ( <p className="text-sm text-red-600 mt-1"> {errors.confirmPassword.message} </p> )}
             </div>
           </div>
         </div>

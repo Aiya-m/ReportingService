@@ -3,6 +3,23 @@ import userPool from "../UserPool";
 import { CognitoUser } from "amazon-cognito-identity-js";
 import { useLocation, useNavigate, Navigate } from "react-router-dom";
 
+const BackIcon = () => (
+  <svg 
+    xmlns="http://www.w3.org/2000/svg" 
+    fill="none" 
+    viewBox="0 0 24 24" 
+    strokeWidth={2.5} 
+    stroke="currentColor" 
+    className="w-6 h-6 text-white"
+  >
+    <path 
+      strokeLinecap="round" 
+      strokeLinejoin="round" 
+      d="M15.75 19.5L8.25 12l7.5-7.5" 
+    />
+  </svg>
+);
+
 const ConfirmRegister = () => {
   const navigate = useNavigate();
   const location = useLocation();
@@ -10,7 +27,6 @@ const ConfirmRegister = () => {
   const [form, setForm] = useState({
     confirmationCode: "",
   });
-
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
 
@@ -21,7 +37,6 @@ const ConfirmRegister = () => {
 
   const handleSubmit = (e) => {
     e.preventDefault();
-
     setLoading(true);
     setError("");
 
@@ -42,7 +57,6 @@ const ConfirmRegister = () => {
 
     cognitoUser.confirmRegistration(form.confirmationCode, true, (err, result) => {
       setLoading(false);
-
       if (err) {
         alert(err.message || "Confirmation failed");
         setError(err.message || "Confirmation failed");
@@ -51,26 +65,23 @@ const ConfirmRegister = () => {
       }
       console.log("Confirmation result:", result);
       alert("Account confirmed successfully! Please log in.");
-      navigate('/') 
+      navigate('/');
     });
   };
 
   const handleResendCode = () => {
     setLoading(true);
     setError("");
-
     const username = location.state?.username;
     if (!username) {
       setError("No username provided.");
       setLoading(false);
       return;
     }
-
     const cognitoUser = new CognitoUser({
       Username: username,
       Pool: userPool,
     });
-
     cognitoUser.resendConfirmationCode((err, result) => {
       setLoading(false);
       if (err) {
@@ -88,17 +99,30 @@ const ConfirmRegister = () => {
   }
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gray-100 p-4">
-      
-      <div className="bg-white p-8 rounded-lg shadow-lg w-full max-w-sm">
+    <div className="min-h-screen bg-orange-500 p-4 font-sans">
 
-        <h2 className="text-2xl font-bold text-center text-gray-800 mb-4">
+      <div className="relative flex items-center justify-center mb-6 h-10">
+        <button 
+          type="button" 
+          onClick={() => navigate(-1)}
+          className="absolute left-0 bg-white/30 rounded-full p-2 shadow-md hover:bg-white/50 transition"
+        >
+          <BackIcon />
+        </button>
+        <h1 className="text-4xl font-bold text-white">
+          ResQ
+        </h1>
+      </div>
+
+      <div className="bg-white rounded-2xl shadow-2xl p-8 sm:p-10 w-full max-w-md mx-auto">
+        
+        <h2 className="text-3xl font-bold text-center text-gray-900 mb-4">
           การยืนยันบัญชี
         </h2>
         
-        <p className="text-sm text-gray-600 text-center mb-6">
-          รหัสการยืนยันบัญชีถูกส่งไปที่ : {" "}
-          <strong className="font-medium text-gray-900">
+        <p className="text-gray-600 text-center mb-6">
+          รหัสการยืนยันบัญชีถูกส่งไปที่:
+          <strong className="font-medium text-gray-900 block truncate">
             {location.state?.email}
           </strong>
         </p>
@@ -115,7 +139,7 @@ const ConfirmRegister = () => {
               placeholder="Enter 6-digit code"
               required
               disabled={loading}
-              className="w-full px-4 py-2 border border-gray-300 rounded-md shadow-sm text-gray-900 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 disabled:bg-gray-50 disabled:cursor-not-allowed"
+              className="w-full px-4 py-3 rounded-lg border border-gray-300 text-gray-900 placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-orange-400 focus:border-transparent"
             />
           </div>
 
@@ -128,9 +152,9 @@ const ConfirmRegister = () => {
           <button 
             type="submit" 
             disabled={loading}
-            className="w-full bg-blue-600 text-white py-2 px-4 rounded-md font-semibold shadow-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 disabled:bg-gray-400 disabled:cursor-not-allowed"
+            className="w-full py-3 px-4 rounded-lg bg-orange-500 text-white font-semibold shadow-md hover:bg-orange-600 focus:outline-none focus:ring-2 focus:ring-orange-400 focus:ring-offset-2 transition-colors disabled:bg-gray-400"
           >
-            {loading ? "Confirming..." : "Confirm"}
+            {loading ? "กำลังยืนยัน..." : "ยืนยันบัญชี"}
           </button>
         </form>
 
@@ -138,9 +162,9 @@ const ConfirmRegister = () => {
           <button 
             onClick={handleResendCode} 
             disabled={loading}
-            className="text-sm font-medium text-blue-600 hover:text-blue-800 focus:outline-none disabled:text-gray-400 disabled:cursor-not-allowed"
+            className="text-sm font-medium text-blue-600 hover:underline focus:outline-none disabled:text-gray-400"
           >
-            {loading ? "Sending..." : "Resend Code"}
+            {loading ? "กำลังส่ง..." : "ส่งรหัสอีกครั้ง"}
           </button>
         </div>
 
@@ -150,3 +174,4 @@ const ConfirmRegister = () => {
 };
 
 export default ConfirmRegister;
+

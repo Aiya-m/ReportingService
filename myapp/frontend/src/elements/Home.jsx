@@ -6,6 +6,7 @@ import Nav from './Admin/Nav'
 import { useNavigate } from 'react-router-dom';
 import BottomNavbar from "./Local_People/Nav";
 import { ArrowLeft, Image as ImageIcon } from "lucide-react";
+import Status from './Status'
 
 function Home() {
     const mapRef = React.useRef(null);
@@ -100,6 +101,7 @@ function Home() {
             <div className="relative w-full max-w-sm sm:max-w-md bg-white shadow-lg rounded-lg overflow-y-auto max-h-screen">
                 <div className="flex items-center bg-orange-500 text-white px-4 py-3">
                     <h1 className="text-lg font-bold">ResQ</h1>
+                    <Status/>
                 </div>
 
                 <div className="relative h-[525px]">

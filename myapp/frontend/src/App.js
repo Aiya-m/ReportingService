@@ -3,14 +3,16 @@ import './App.css';
 import React, { useEffect, useState } from 'react';
 import {BrowserRouter, Routes, Route} from 'react-router-dom';
 import Home from './elements/Home';
-import RegisterL from './elements/registerLocalPeople';
-import RegisterO from './elements/Officer/registerOfficer';
+import RegisterL from './elements/Register';
 import AdminOfficer from './elements/Admin/officerPage'
 import AdminLocal from './elements/Admin/localPage'
 import LocalReport from './elements/Local_People/ReportPage'
 import Profile from './elements/Local_People/ProfilePage'
 import HistoryPage from './elements/Local_People/ReportHistoryPage'
 import ManageProfile from './elements/Local_People/ManageProfilePage'
+import Login from './elements/loginPage';
+import Confirmation from './elements/ConfirmRegister';
+import Forgotpassword from './elements/Forgotpassword';
 
 function App() {
 
@@ -29,8 +31,10 @@ function App() {
     <BrowserRouter>
       <Routes>
         <Route path="/" element={<Home />} />
+        <Route path="/login" element={<Login />} />
         <Route path="/register" element={<RegisterL />} />
-        <Route path="/register-officer" element={<RegisterO />} />
+        <Route path="/forgot-password" element={<Forgotpassword />} />
+        <Route path="/ConfirmRegister" element={<Confirmation />} />
         <Route path="/admin-officer" element={<AdminOfficer />} />
         <Route path='/admin-localpeople' element={<AdminLocal />} />
         <Route path='/report-page' element={<LocalReport />} />
