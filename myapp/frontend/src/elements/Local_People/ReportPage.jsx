@@ -67,6 +67,9 @@ const Report = () => {
     const handleSubmit = async (e) => {
         e.preventDefault();
 
+        const controller = new AbortController();
+        const timeoutId = setTimeout(() => controller.abort(), 300000); // 5 นาที
+
         try {
             const response = await fetch("http://44.220.134.131:3000/report-page", {
                 method: "POST",
@@ -79,8 +82,10 @@ const Report = () => {
                     address: form.address,
                     title: form.agency,
                     attachment: form.attachment
-                })
+                }),
+                signal: controller.signal
             });
+            clearTimeout(timeoutId);
 
             const data = await response.json();
             if (response.ok) {
@@ -90,9 +95,14 @@ const Report = () => {
                 alert("เกิดข้อผิดพลาด: " + data.message);
             }
         } catch (err) {
-            console.error(err);
-            alert("เกิดข้อผิดพลาดระหว่างเชื่อมต่อเซิร์ฟเวอร์");
+            if (err.name === "AbortError") {
+                alert("Request timeout: กรุณาลองอัพโหลดใหม่");
+            } else {
+                console.error(err);
+                alert("เกิดข้อผิดพลาดระหว่างเชื่อมต่อเซิร์ฟเวอร์");
+            }
         }
+
     };
 
 
