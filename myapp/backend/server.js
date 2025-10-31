@@ -87,7 +87,7 @@ app.put("/reports/:id/status", async (req, res) => {
 
 
 app.post("/", async (req, res) => {
-  const { firstname, lastname, phone_number, latitude, longitude, is_emergency, title, description } = req.body;
+  const { firstname, lastname, phone_number, latitude, longitude, is_emergency, title, description, attachment } = req.body;
 
   if (!firstname || !lastname || !phone_number || !latitude || !longitude || !title) {
     return res.status(400).json({ message: "กรอกข้อมูลให้ครบ" });
