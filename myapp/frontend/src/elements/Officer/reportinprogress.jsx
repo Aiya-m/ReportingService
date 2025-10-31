@@ -36,6 +36,7 @@ const ReportIncoming = () => {
                 </div>
 
                 <div className="flex-grow overflow-y-auto px-4 py-3 space-y-3">
+                    <h1 className="text-lg font-bold text-white">กำลังดำเนินงาน</h1>
                     {loading ? (
                         <p className="text-center text-gray-500 mt-10">กำลังโหลดข้อมูล...</p>
                     ) : reports.length > 0 ? (

@@ -29,7 +29,6 @@ const ReportInfo = () => {
     fetchReport();
   }, [id]);
 
-  // ฟังก์ชันอัปเดตสถานะรายงาน
   const handleStatusChange = async (newStatus) => {
     setUpdating(true);
     try {
@@ -42,6 +41,9 @@ const ReportInfo = () => {
       const data = await res.json();
       if (res.ok) {
         setReport((prev) => ({ ...prev, status: newStatus }));
+        setTimeout(() => {
+          navigate(-1);
+        }, 800);
       } else {
         console.error("Update failed:", data.message);
       }
@@ -51,6 +53,7 @@ const ReportInfo = () => {
       setUpdating(false);
     }
   };
+
 
   if (loading) {
     return (
@@ -155,11 +158,10 @@ const ReportInfo = () => {
             <button
               onClick={() => handleStatusChange(nextStatus)}
               disabled={updating}
-              className={`w-full mt-6 font-semibold py-2.5 rounded-md shadow text-white ${
-                report.status === "รอดำเนินการ"
+              className={`w-full mt-6 font-semibold py-2.5 rounded-md shadow text-white ${report.status === "รอดำเนินการ"
                   ? "bg-orange-500 hover:bg-yellow-500"
                   : "bg-green-500 hover:bg-green-600"
-              } ${updating ? "opacity-50 cursor-not-allowed" : ""}`}
+                } ${updating ? "opacity-50 cursor-not-allowed" : ""}`}
             >
               {updating ? "กำลังอัปเดต..." : buttonText}
             </button>
