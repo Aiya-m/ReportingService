@@ -97,7 +97,7 @@ function Home() {
     React.useEffect(() => {
         const fetchCautionLocations = async () => {
             try {
-                const res = await fetch("http://localhost:5000/api/caution_position");
+                const res = await fetch("/api/caution_position");
                 const data = await res.json();
                 setCautionLocations(data.locations);
             } catch (err) {
