@@ -240,8 +240,68 @@ app.post("/", async (req, res) => {
     console.error(err);
     res.status(500).json({ message: "เกิดข้อผิดพลาด" });
   }
-  console.log("📦 req.body =", req.body);
+  console.log("req.body =", req.body);
 });
+
+app.get("/reports", async (req, res) => {
+  const { firstname, lastname } = req.query;
+
+  if (!firstname || !lastname) {
+    return res.status(400).json({ message: "ต้องระบุ firstname และ lastname" });
+  }
+
+  try {
+    const [rows] = await promisePool.execute(
+      "SELECT id, title, address, status, DATE_FORMAT(created_at, '%d %b %Y') as date, TIME_FORMAT(created_at, '%H:%i น.') as time FROM Report WHERE firstname = ? AND lastname = ? ORDER BY created_at DESC",
+      [firstname, lastname]
+    );
+
+    res.status(200).json({ reports: rows });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ message: "เกิดข้อผิดพลาดในการดึงข้อมูล" });
+  }
+});
+
+app.get("/reports/pending", async (req, res) => {
+  try {
+    const [rows] = await promisePool.execute(
+      "SELECT id, title, address, status, DATE_FORMAT(created_at, '%d %b %Y') as date, TIME_FORMAT(created_at, '%H:%i น.') as time FROM Report WHERE status = 'รอดำเนินการ' ORDER BY created_at DESC"
+    );
+    res.status(200).json({ reports: rows });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ message: "เกิดข้อผิดพลาดในการดึงข้อมูล" });
+  }
+});
+
+app.get("/api", (req, res) => {
+  res.json({ "users": ["userOne", "userTwo", "userThree"] })
+})
+
+app.get("/caution_position", async (req, res) => {
+  try {
+    const [rows] = await promisePool.execute(
+      `SELECT latitude, longitude 
+       FROM Report 
+       WHERE is_emergency = TRUE 
+         AND status != 'สำเร็จแล้ว'
+         AND latitude IS NOT NULL 
+         AND longitude IS NOT NULL`
+    );
+
+    const locations = rows.map(row => [
+      parseFloat(row.longitude),
+      parseFloat(row.latitude)
+    ]);
+
+    res.json({ locations });
+  } catch (err) {
+    console.error("Error fetching caution positions:", err);
+    res.status(500).json({ error: "เกิดข้อผิดพลาดในการดึงข้อมูลพิกัด" });
+  }
+});
+
 
 app.get("/get-departments-list", (req, res) => {
   const query = "SELECT * FROM Department";
