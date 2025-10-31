@@ -13,7 +13,7 @@ import {
 
 import { uploadToS3 } from "./s3.js";
 
-dotenv.config();
+// dotenv.config();
 const app = express();
 const PORT = 5000;
 app.use(cors({ origin: "http://localhost:3000" }));
