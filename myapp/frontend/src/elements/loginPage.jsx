@@ -31,7 +31,16 @@ const Login = () => {
       .then(data => {
         setLoading(false);
         console.log("Logged in!", data)
-        navigate('/');
+        const payload = data.getIdToken().payload;
+        const role = payload["custom:Role"];
+        if (role === "officer"){
+          navigate('/report-incoming');
+        } else if (role === 'admin') {
+          navigate('/admin-officer')
+        } else {
+          navigate('/')
+        }
+        
       })
       .catch(err => {
         setLoading(false);

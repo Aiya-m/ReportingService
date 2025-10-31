@@ -50,6 +50,7 @@ function App() {
           </Route>
 
           <Route element={<RoleBasedGuard allowedRoles={['localpeople']} />}>
+            <Route path="/" element={<Home />} />
             <Route path='/report-page' element={<LocalReport />} />
             <Route path='/profile' element={<Profile />} />
             <Route path='/history-page' element={<HistoryPage />} />
