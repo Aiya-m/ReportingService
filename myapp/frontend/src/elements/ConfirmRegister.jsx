@@ -1,5 +1,6 @@
 import React, { useState } from "react";
 import userPool from "../UserPool";
+import axios from 'axios';
 import { CognitoUser } from "amazon-cognito-identity-js";
 import { useLocation, useNavigate, Navigate } from "react-router-dom";
 
@@ -42,6 +43,7 @@ const ConfirmRegister = () => {
 
     const username = location.state?.username;
     const email = location.state?.email;
+    const role = location.state?.role;
 
     if (!username) {
       setError("No username provided. Please go back to register.");
@@ -55,18 +57,42 @@ const ConfirmRegister = () => {
       Pool: userPool,
     });
 
-    cognitoUser.confirmRegistration(form.confirmationCode, true, (err, result) => {
-      setLoading(false);
-      if (err) {
-        alert(err.message || "Confirmation failed");
-        setError(err.message || "Confirmation failed");
-        console.error(err);
-        return;
-      }
-      console.log("Confirmation result:", result);
-      alert("Account confirmed successfully! Please log in.");
-      navigate('/');
-    });
+    cognitoUser.confirmRegistration(form.confirmationCode, true,async (err, result) => {
+            if (err) {
+                setLoading(false);
+                alert(err.message || "Confirmation failed");
+                setError(err.message || "Confirmation failed");
+                console.error(err);
+                return;
+            }
+
+            console.log("Confirmation result:", result);
+
+            if (role === 'officer') {
+                try {
+                    console.log(`Officer confirmed. Now disabling for admin approval: ${username}`);
+
+                    await axios.post('http://localhost:5000/api/disable-user', { 
+                        username: username 
+                    });
+                    
+                    console.log("User disabled successfully.");
+                    alert("Account confirmed! Your officer account is now pending admin approval.");
+
+                } catch (disableError) {
+                    setLoading(false);
+                    console.error("Failed to disable user after confirmation:", disableError);
+                    alert("Account confirmed, but failed to set officer status. Please contact admin.");
+                    navigate('/');
+                    return;
+                }
+            } else {
+                alert("Account confirmed successfully! Please log in.");
+            }
+
+            setLoading(false);
+            navigate('/login');
+        });
   };
 
   const handleResendCode = () => {
