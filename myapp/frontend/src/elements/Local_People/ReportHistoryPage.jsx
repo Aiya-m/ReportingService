@@ -29,7 +29,7 @@ const ReportHistory = () => {
         const fetchHistory = async () => {
             try {
                 const res = await fetch(
-                    `http://54.226.138.110:5000/reports?firstname=${firstname}&lastname=${lastname}`
+                    `http://13.220.85.162:5000/reports?firstname=${firstname}&lastname=${lastname}`
                 );
                 const data = await res.json();
                 if (res.ok) {
