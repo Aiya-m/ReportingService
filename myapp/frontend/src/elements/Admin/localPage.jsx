@@ -50,9 +50,9 @@ function LocalPage(){
             <div className="p-6">
                 <h2 className="text-2xl font-bold mb-4">รายการผู้ใช้ทั่วไป</h2>
                 <div className="overflow-x-auto">
-                    <table className="min-w-full bg-orange-500 border border-gray-200 rounded-lg shadow-md">
+                    <table className="min-w-full bg-white border border-gray-200 rounded-lg shadow-md">
                         <thead>
-                            <tr className="bg-blue-500 text-white">
+                            <tr className="bg-orange-500 text-white">
                                 <th className="py-2 px-4 text-left">ลำดับ</th>
                                 <th className="py-2 px-4 text-left">ชื่อจริง</th>
                                 <th className="py-2 px-4 text-left">นามสกุล</th>
@@ -65,7 +65,7 @@ function LocalPage(){
                         </thead>
                         <tbody>
                             {users.map((user, index) => (
-                                <tr key={user.username} className={index % 2 === 0 ? "bg-gray-100" : "bg-orange-500"}>
+                                <tr key={user.username} className="bg-gray-100">
                                     <td className="py-2 px-4">{index + 1}</td>
                                     <td className="py-2 px-4">{user.firstname || '-'}</td>
                                     <td className="py-2 px-4">{user.lastname || '-'}</td>

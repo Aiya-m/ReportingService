@@ -65,7 +65,7 @@ function OfficerPage() {
                         </thead>
                         <tbody>
                             {users.map((user, index) => (
-                                <tr key={user.username} className={index % 2 === 0 ? "bg-gray-100" : "bg-white"}>
+                                <tr key={user.username} className="bg-gray-100">
                                     <td className="py-2 px-4">{index + 1}</td>
                                     <td className="py-2 px-4">{user.firstname || '-'}</td>
                                     <td className="py-2 px-4">{user.lastname || '-'}</td>
