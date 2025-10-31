@@ -16,12 +16,9 @@ import ReportComplete from './elements/Officer/reportcomplete'
 import Login from './elements/loginPage';
 import Confirmation from './elements/ConfirmRegister';
 import Forgotpassword from './elements/Forgotpassword';
-<<<<<<< HEAD
 import ProtectedRoute from './components/ProtectedRoute';
 import RoleBasedGuard from './components/RoleBasedGuard';
-=======
 import ReportInfo from './elements/Officer/reportInfo'
->>>>>>> dd42eca988eb5e0db4a5bafb639bc2c06b078314
 
 function App() {
 
@@ -63,23 +60,13 @@ function App() {
             <Route path='/report-incoming' element={<ReportIncome />} />
             <Route path='/report-in-progress' element={<ReportProgress />} />
             <Route path='/report-complete' element={<ReportComplete />} />
+            <Route path="/report-incoming/:id" element={<ReportInfo />} />
           </Route>
 
         </Route>
 
         {/* <Route path="/unauthorized" element={<Unauthorized />} /> */}
         {/* <Route path="*" element={<NotFound />} /> */}
-
-        <Route path="/admin-officer" element={<AdminOfficer />} />
-        <Route path='/admin-localpeople' element={<AdminLocal />} />
-        <Route path='/report-page' element={<LocalReport />} />
-        <Route path='/profile' element={<Profile />} />
-        <Route path='/history-page' element={<HistoryPage />} />
-        <Route path='/manage-profile' element={<ManageProfile />} />
-        <Route path='/report-incoming' element={<ReportIncome />} />
-        <Route path='/report-in-progress' element={<ReportProgress />} />
-        <Route path='/report-complete' element={<ReportComplete />} />
-        <Route path="/report-incoming/:id" element={<ReportInfo />} />
       </Routes>
     </BrowserRouter>
     // <div>

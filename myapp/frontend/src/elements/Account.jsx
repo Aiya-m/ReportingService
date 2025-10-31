@@ -1,10 +1,13 @@
-import React, {createContext} from "react"
+import React, {useState, useEffect, useContext, createContext} from "react"
 import Pool from "../UserPool";
 import { CognitoUser, AuthenticationDetails } from 'amazon-cognito-identity-js';
 
 const AccountContext = createContext();
 
 const Account = (props) => {
+    const [user, setUser] = useState(null);
+    const [isLoading, setIsLoading] = useState(true);
+
     const getSession = async () => {
         return await new Promise((resolve, reject) => {
             const user = Pool.getCurrentUser();
@@ -17,10 +20,29 @@ const Account = (props) => {
                     }
                 })
             } else {
-                reject();
+                reject("No user found");
             }
         });
     }
+
+    useEffect(() => {
+        getSession().then(session => {
+            // ถอดรหัส Token เพื่อเอา "Roles"
+            const payload = session.getIdToken().payload;
+            const roles = payload['custom:Role'] ? [payload['custom:Role']] : [];
+            setUser({
+                username: payload['cognito:username'],
+                email: payload.email,
+                roles: roles
+            });
+            setIsLoading(false);
+        }).catch((err) => {
+            // ไม่ได้ล็อกอิน
+            setUser(null);
+            setIsLoading(false);
+        });
+    }, []);
+
     const authenticate = async (Username, Password) => {
         return await new Promise((resolve, reject) => {
             const authDetails = new AuthenticationDetails({
@@ -36,6 +58,13 @@ const Account = (props) => {
             cognitoUser.authenticateUser(authDetails, {
                 onSuccess: (session) => {
                     console.log("Login success!", session);
+                    const payload = session.getIdToken().payload;
+                    const roles = payload['custom:Role'] ? [payload['custom:Role']] : [];
+                    setUser({
+                        username: payload['cognito:username'],
+                        email: payload.email,
+                        roles: roles
+                    });
                     resolve(session)
                 },
                 onFailure: (err) => {
@@ -54,14 +83,17 @@ const Account = (props) => {
         const user = Pool.getCurrentUser();
         if (user) {
             user.signOut();
+            setUser(null);
         }
     }
 
     return (
-        <AccountContext.Provider value={{ authenticate, getSession, logout }}>
+        <AccountContext.Provider value={{ authenticate, getSession, logout, user, isLoading }}>
             {props.children}
         </AccountContext.Provider>
     )
 }
 
-export {Account, AccountContext};
+const useAccount = () => useContext(AccountContext);
+
+export { Account, AccountContext, useAccount };
