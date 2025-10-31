@@ -5,22 +5,22 @@ import { CognitoUserAttribute } from "amazon-cognito-identity-js";
 import { useForm } from "react-hook-form";
 import { yupResolver } from "@hookform/resolvers/yup";
 import { userRegisterSchema, officerRegisterSchema } from "./validationSchema";
-import RoleToggle, { ACCOUNT_TYPES }  from "./RoleToggle";
+import RoleToggle, { ACCOUNT_TYPES } from "./RoleToggle";
 import axios from 'axios';
 
 const BackIcon = () => (
-  <svg 
-    xmlns="http://www.w3.org/2000/svg" 
-    fill="none" 
-    viewBox="0 0 24 24" 
-    strokeWidth={2.5} 
-    stroke="currentColor" 
+  <svg
+    xmlns="http://www.w3.org/2000/svg"
+    fill="none"
+    viewBox="0 0 24 24"
+    strokeWidth={2.5}
+    stroke="currentColor"
     className="w-6 h-6 text-orange-500"
   >
-    <path 
-      strokeLinecap="round" 
-      strokeLinejoin="round" 
-      d="M15.75 19.5L8.25 12l7.5-7.5" 
+    <path
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      d="M15.75 19.5L8.25 12l7.5-7.5"
     />
   </svg>
 );
@@ -49,7 +49,7 @@ const Register = () => {
 
   const currentSchema = isOfficer ? officerRegisterSchema : userRegisterSchema;
 
-  const { 
+  const {
     register,           // (A) ฟังก์ชันสำหรับผูก input
     handleSubmit,       // (B) ฟังก์ชันสำหรับหุ้ม onSubmit ของ form
     formState: { errors }, // (C) Object ที่เก็บ error ทั้งหมด (มาจาก Yup)
@@ -85,12 +85,30 @@ const Register = () => {
   //     setErrors((prev) => ({ ...prev, [name]: null }));
   //   }
   // };
-  
+
+  const [departments, setDepartments] = useState([]);
+  const [loadingDepartments, setLoadingDepartments] = useState(false);
+
+  useEffect(() => {
+    setLoadingDepartments(true);
+    axios
+      .get("http://54.146.205.234:5000/get-departments-list")
+      .then((res) => {
+        setDepartments(res.data.department || []);
+      })
+      .catch((err) => {
+        console.error("Error fetching departments:", err);
+      })
+      .finally(() => {
+        setLoadingDepartments(false);
+      });
+  }, []);
+
 
   const onSubmit = (data) => {
     setLoading(true);
     console.log("Submitting data for:", isOfficer ? "Officer" : "User", data);
-    const userData = {username: data.username, email: data.email, role: role}
+    const userData = { username: data.username, email: data.email, role: role }
 
     // Cognito needs attributes as "CognitoUserAttribute" objects
     const attributes = [
@@ -98,20 +116,20 @@ const Register = () => {
       new CognitoUserAttribute({ Name: "given_name", Value: data.firstName }),
       new CognitoUserAttribute({ Name: "family_name", Value: data.lastName }),
       new CognitoUserAttribute({ Name: "phone_number", Value: data.phoneNumber }),
-      new CognitoUserAttribute({ Name: "custom:address", Value: data.address}),
-      new CognitoUserAttribute({ Name: "custom:citizen_id", Value: data.idCard}),
-      new CognitoUserAttribute({ Name: "custom:Role", Value: role}),
+      new CognitoUserAttribute({ Name: "custom:address", Value: data.address }),
+      new CognitoUserAttribute({ Name: "custom:citizen_id", Value: data.idCard }),
+      new CognitoUserAttribute({ Name: "custom:Role", Value: role }),
     ];
 
     if (isOfficer) {
       attributes.push(
-        new CognitoUserAttribute({ Name: "custom:officer_id", Value: data.idOfficer}),
-        new CognitoUserAttribute({ Name: "custom:department", Value: data.department})
+        new CognitoUserAttribute({ Name: "custom:officer_id", Value: data.idOfficer }),
+        new CognitoUserAttribute({ Name: "custom:department", Value: data.department })
       );
     }
 
     UserPool.signUp(
-      data.username, 
+      data.username,
       data.password,
       attributes,
       null,
@@ -156,7 +174,7 @@ const Register = () => {
         {/* <span className="font-medium text-white">ผู้ใช้ทั่วไป</span>
         <ToggleSwitch checked={isOfficer} onChange={handleToggleChange} />
         <span className="font-medium text-white">เจ้าหน้าที่</span> */}
-        <RoleToggle 
+        <RoleToggle
           onToggleChange={handleRoleChange}
           currentType={isOfficer ? ACCOUNT_TYPES.OFFICER : ACCOUNT_TYPES.CITIZEN}
         />
@@ -165,7 +183,7 @@ const Register = () => {
       <form onSubmit={handleSubmit(onSubmit)} className="w-full max-w-lg mx-auto space-y-6">
         {errors.general && (
           <p className="text-center text-white bg-red-600 p-3 rounded-lg -mb-2">
-            {errors.general.message} 
+            {errors.general.message}
           </p>
         )}
         <div className="bg-orange-100 rounded-2xl p-6 sm:p-8 shadow-lg">
@@ -249,7 +267,7 @@ const Register = () => {
             </div>
 
             <div>
-              <label htmlFor="address"  className="block font-medium mb-2">
+              <label htmlFor="address" className="block font-medium mb-2">
                 ที่อยู่ (ไม่จำเป็น)
               </label>
               <textarea
@@ -284,14 +302,26 @@ const Register = () => {
                   <label htmlFor="department" className="block font-medium mb-2">
                     หน่วยงานที่สังกัด
                   </label>
-                  <input
-                    type="text"
-                    id="department"
-                    {...register("department")}
-                    placeholder="หน่วยงานที่สังกัด"
-                    className="w-full bg-white rounded-lg border border-gray-300 px-4 py-3 text-gray-900 focus:outline-none focus:ring-2 focus:ring-orange-500"
-                  />
-                  {errors.department && <p className="text-red-600 text-sm mt-1">{errors.department.message}</p>}
+
+                  {loadingDepartments ? (
+                    <p className="text-gray-500">กำลังโหลดรายชื่อหน่วยงาน...</p>
+                  ) : (
+                    <select
+                      id="department"
+                      {...register("department")}
+                      className="w-full bg-white rounded-lg border border-gray-300 px-4 py-3 text-gray-900 focus:outline-none focus:ring-2 focus:ring-orange-500"
+                      defaultValue=""
+                    >
+                      <option value="" disabled>เลือกหน่วยงาน</option>
+                      {departments.map((dept) => (
+                        <option key={dept.id} value={dept.name}>{dept.name}</option>
+                      ))}
+                    </select>
+                  )}
+
+                  {errors.department && (
+                    <p className="text-red-600 text-sm mt-1">{errors.department.message}</p>
+                  )}
                 </div>
               </>
             )}
@@ -319,32 +349,32 @@ const Register = () => {
             </div>
 
             <div>
-                <label htmlFor="password" className="block font-medium mb-2">
-                    รหัสผ่าน
-                </label>
-                <input
+              <label htmlFor="password" className="block font-medium mb-2">
+                รหัสผ่าน
+              </label>
+              <input
                 id="password"
                 type="password"
                 placeholder="รหัสผ่าน"
                 {...register("password")}
                 required
                 className="w-full bg-white rounded-lg border border-gray-300 px-4 py-3 text-gray-900 focus:outline-none focus:ring-2 focus:ring-orange-500"
-                />
-                {errors.password && <p className="text-red-600 text-sm mt-1">{errors.password.message}</p>}
+              />
+              {errors.password && <p className="text-red-600 text-sm mt-1">{errors.password.message}</p>}
             </div>
             <div>
-                <label htmlFor="confirmPassword" className="block font-medium mb-2">
-                  ยืนยันรหัสผ่าน
-                </label>
-                <input
+              <label htmlFor="confirmPassword" className="block font-medium mb-2">
+                ยืนยันรหัสผ่าน
+              </label>
+              <input
                 id="confirmPassword"
                 type="password"
                 placeholder="ยืนยันรหัสผ่าน"
                 {...register("confirmPassword")}
                 required
                 className="w-full bg-white rounded-lg border border-gray-300 px-4 py-3 text-gray-900 focus:outline-none focus:ring-2 focus:ring-orange-500"
-                />
-                {errors.confirmPassword && ( <p className="text-sm text-red-600 mt-1"> {errors.confirmPassword.message} </p> )}
+              />
+              {errors.confirmPassword && (<p className="text-sm text-red-600 mt-1"> {errors.confirmPassword.message} </p>)}
             </div>
           </div>
         </div>

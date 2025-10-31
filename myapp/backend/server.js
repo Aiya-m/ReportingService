@@ -305,6 +305,7 @@ app.get("/get-departments-list", (req, res) => {
       console.error("Query error:", err);
       return res.status(500).json({ error: "Database query failed" });
     }
+    res.status(200).json({ department: results });
   })
 });
 
