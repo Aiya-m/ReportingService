@@ -1,15 +1,17 @@
 import React, { useState, useEffect } from "react";
 import { ArrowLeft, Clock, MapPin, FileText } from "lucide-react";
 import OfficerNavbar from "./officerNav";
+import { useNavigate } from "react-router-dom";
 
 const ReportIncoming = () => {
     const [reports, setReports] = useState([]);
     const [loading, setLoading] = useState(true);
+    const navigate = useNavigate();
 
     useEffect(() => {
         const fetchPendingReports = async () => {
             try {
-                const res = await fetch("http://52.87.254.106:5000/reports/pending");
+                const res = await fetch("http://54.226.138.110:5000/reports/pending");
                 const data = await res.json();
                 if (res.ok) {
                     setReports(data.reports || []);
@@ -28,9 +30,9 @@ const ReportIncoming = () => {
 
     return (
         <div className="flex justify-center bg-gray-200 min-h-screen">
-            <div className="relative w-full max-w-sm sm:max-w-md bg-white shadow-lg rounded-lg h-screen flex flex-col">
+            <div className="relative w-full max-w-sm sm:max-w-md bg-orange-500 shadow-lg rounded-lg h-screen flex flex-col">
                 <div className="flex items-center bg-orange-500 text-white px-4 py-3 flex-shrink-0">
-                    <h1 className="text-lg font-bold">รายงานที่รอดำเนินการ</h1>
+                    <h1 className="text-lg font-bold">ResQ</h1>
                 </div>
 
                 <div className="flex-grow overflow-y-auto px-4 py-3 space-y-3">
@@ -55,7 +57,7 @@ const ReportIncoming = () => {
                                     <span className="text-xs bg-yellow-100 text-yellow-700 px-2 py-1 rounded-full">
                                         {item.status || "รอดำเนินการ"}
                                     </span>
-                                    <button className="text-xs flex items-center text-blue-600 hover:underline">
+                                    <button className="text-xs flex items-center text-blue-600 hover:underline" onClick={() => navigate(`/report-incoming/${item.id}`)}>
                                         <FileText size={14} className="mr-1" /> รายละเอียด
                                     </button>
                                 </div>
