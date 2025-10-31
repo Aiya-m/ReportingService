@@ -13,7 +13,7 @@ const ReportInfo = () => {
   useEffect(() => {
     const fetchReport = async () => {
       try {
-        const res = await fetch(`http://54.146.205.234:5000/reports/${id}`);
+        const res = await fetch(`10.0.0.5:5000/reports/${id}`);
         const data = await res.json();
         if (res.ok) {
           setReport(data.report);
