@@ -1,25 +1,74 @@
-import React, { useState } from "react";
-import { useNavigate } from 'react-router-dom';
-import useMutation from "../../hooks/useMutation";
-import { ArrowLeft, Image as ImageIcon } from "lucide-react";
+import React, { useState, useEffect } from "react";
+import { ArrowLeft, Clock, MapPin, FileText } from "lucide-react";
 import OfficerNavbar from "./officerNav";
+import { useNavigate } from "react-router-dom";
 
 const ReportIncoming = () => {
+    const [reports, setReports] = useState([]);
+    const [loading, setLoading] = useState(true);
     const navigate = useNavigate();
+
+    useEffect(() => {
+        const fetchProgressReports = async () => {
+            try {
+                const res = await fetch("http://13.220.85.162:5000/reports-complete");
+                const data = await res.json();
+                if (res.ok) {
+                    setReports(data.reports || []);
+                } else {
+                    console.error("Fetch error:", data.message);
+                }
+            } catch (err) {
+                console.error("Error fetching progress reports:", err);
+            } finally {
+                setLoading(false);
+            }
+        };
+
+        fetchProgressReports();
+    }, []);
 
     return (
         <div className="flex justify-center bg-gray-200 min-h-screen">
-            <div className="relative w-full max-w-sm sm:max-w-md bg-orange-500 shadow-lg rounded-lg overflow-y-auto max-h-screen">
-                <div className="flex items-center bg-orange-500 text-white px-4 py-3">
+            <div className="relative w-full max-w-sm sm:max-w-md bg-orange-500 shadow-lg rounded-lg h-screen flex flex-col">
+                <div className="flex items-center bg-orange-500 text-white px-4 py-3 flex-shrink-0">
                     <h1 className="text-lg font-bold">ResQ</h1>
                 </div>
-                
-                <div className="flex-grow overflow-y-auto">
-                    <h1>
-                        this is report complete
-                    </h1>
+
+                <div className="flex-grow overflow-y-auto px-4 py-3 space-y-3">
+                    {loading ? (
+                        <p className="text-center text-gray-500 mt-10">กำลังโหลดข้อมูล...</p>
+                    ) : reports.length > 0 ? (
+                        reports.map((item) => (
+                            <div
+                                key={item.id}
+                                className="bg-gray-100 rounded-xl shadow p-3 border border-gray-200"
+                            >
+                                <h2 className="font-semibold text-lg text-gray-800">{item.title}</h2>
+                                <div className="text-sm text-gray-600 mt-1 flex items-center">
+                                    <MapPin size={14} className="mr-1 text-orange-500" />
+                                    {item.address || "-"}
+                                </div>
+                                <div className="flex items-center text-sm text-gray-600 mt-1">
+                                    <Clock size={14} className="mr-1 text-orange-500" />
+                                    {item.date || "-"} • {item.time || ""}
+                                </div>
+                                <div className="mt-2 flex items-center justify-between">
+                                    <span className="text-xs bg-yellow-100 text-yellow-700 px-2 py-1 rounded-full">
+                                        {item.status || "รอดำเนินการ"}
+                                    </span>
+                                    <button className="text-xs flex items-center text-blue-600 hover:underline" onClick={() => navigate(`/report-incoming/${item.id}`)}>
+                                        <FileText size={14} className="mr-1" /> รายละเอียด
+                                    </button>
+                                </div>
+                            </div>
+                        ))
+                    ) : (
+                        <p className="text-gray-500 text-center mt-10">ไม่มีรายงานที่เสร็จสิ้น</p>
+                    )}
                 </div>
-                <div className="absolute bottom-0 w-full flex-shrink-0">
+
+                <div className="flex-shrink-0">
                     <OfficerNavbar />
                 </div>
             </div>

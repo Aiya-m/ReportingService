@@ -151,6 +151,18 @@ app.get("/reports-progress", async (req, res) => {
   }
 });
 
+app.get("/reports-complete", async (req, res) => {
+  try {
+    const [rows] = await promisePool.execute(
+      "SELECT id, title, address, status, DATE_FORMAT(created_at, '%d %b %Y') as date, TIME_FORMAT(created_at, '%H:%i น.') as time FROM Report WHERE status = 'สำเร็จ' ORDER BY created_at DESC"
+    );
+    res.status(200).json({ reports: rows });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ message: "เกิดข้อผิดพลาดในการดึงข้อมูล" });
+  }
+});
+
 app.get("/", (req, res) => {
   res.send("Hello from backend");
 });
