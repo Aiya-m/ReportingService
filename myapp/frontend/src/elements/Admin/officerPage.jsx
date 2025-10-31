@@ -17,7 +17,7 @@ function OfficerPage() {
     const fetchUsers = async () => {
         try {
             setLoading(true);
-            const response = await axios.get('http://localhost:5000/api/users', {
+            const response = await axios.get('/api/users', {
                 params: { isOfficer: Role }
             });
 

@@ -63,7 +63,7 @@ const Register = () => {
   useEffect(() => {
     setLoadingDepartments(true);
     axios
-      .get("http://localhost:5000/api/get-departments-list")
+      .get("/api/get-departments-list")
       .then((res) => {
         setDepartments(res.data.department || []);
       })

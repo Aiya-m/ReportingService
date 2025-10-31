@@ -29,7 +29,7 @@ const ReportHistory = () => {
         const fetchHistory = async () => {
             try {
                 const res = await fetch(
-                    `http://localhost:5000/api/reports?firstname=${firstname}&lastname=${lastname}`
+                    `/api/reports?firstname=${firstname}&lastname=${lastname}`
                 );
                 const data = await res.json();
                 if (res.ok) {

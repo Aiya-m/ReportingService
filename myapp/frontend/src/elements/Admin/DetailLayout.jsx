@@ -51,7 +51,7 @@ const DetailPopupLayout = ({ user, onActionSuccess, role }) => {
         setApiError(null);
 
         try {
-            await axios.post('http://localhost:5000/api/delete-user', {
+            await axios.post('/api/delete-user', {
                 username: user.username 
             });
 

@@ -72,7 +72,7 @@ const ConfirmRegister = () => {
                 try {
                     console.log(`Officer confirmed. Now disabling for admin approval: ${username}`);
 
-                    await axios.post('10.0.0.5:5000/api/disable-user', { 
+                    await axios.post('/api/disable-user', { 
                         username: username 
                     });
                     
