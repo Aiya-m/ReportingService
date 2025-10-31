@@ -119,6 +119,7 @@ app.get("/reports", async (req, res) => {
 });
 
 app.get("/reports/pending", async (req, res) => {
+  console.log("✅ /reports/pending route called");
   try {
     const [rows] = await promisePool.execute(
       "SELECT id, title, address, status, DATE_FORMAT(created_at, '%d %b %Y') as date, TIME_FORMAT(created_at, '%H:%i น.') as time FROM Report WHERE status = 'รอดำเนินการ' ORDER BY created_at DESC"
@@ -129,7 +130,6 @@ app.get("/reports/pending", async (req, res) => {
     res.status(500).json({ message: "เกิดข้อผิดพลาดในการดึงข้อมูล" });
   }
 });
-
 
 app.get("/", (req, res) => {
   res.send("Hello from backend");
