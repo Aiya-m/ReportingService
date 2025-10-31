@@ -29,7 +29,7 @@ const ReportHistory = () => {
         const fetchHistory = async () => {
             try {
                 const res = await fetch(
-                    `http://13.220.85.162:5000/reports?firstname=${firstname}&lastname=${lastname}`
+                    `http://54.146.205.234:5000/reports?firstname=${firstname}&lastname=${lastname}`
                 );
                 const data = await res.json();
                 if (res.ok) {
@@ -80,9 +80,6 @@ const ReportHistory = () => {
                                     <span className="text-xs bg-orange-100 text-orange-700 px-2 py-1 rounded-full">
                                         {item.status || "รอดำเนินการ"}
                                     </span>
-                                    <button className="text-xs flex items-center text-blue-600 hover:underline">
-                                        <FileText size={14} className="mr-1" /> รายละเอียด
-                                    </button>
                                 </div>
                             </div>
                         ))

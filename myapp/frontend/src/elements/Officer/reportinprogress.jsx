@@ -11,7 +11,7 @@ const ReportIncoming = () => {
     useEffect(() => {
         const fetchProgressReports = async () => {
             try {
-                const res = await fetch("http://13.220.85.162:5000/reports-progress");
+                const res = await fetch("http://54.146.205.234:5000/reports-progress");
                 const data = await res.json();
                 if (res.ok) {
                     setReports(data.reports || []);

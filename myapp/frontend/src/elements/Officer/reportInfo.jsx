@@ -33,7 +33,7 @@ const ReportInfo = () => {
   const handleStatusChange = async (newStatus) => {
     setUpdating(true);
     try {
-      const res = await fetch(`http://13.220.85.162:5000/reports/${id}/status`, {
+      const res = await fetch(`http://54.146.205.234:5000/reports/${id}/status`, {
         method: "PUT",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ status: newStatus }),

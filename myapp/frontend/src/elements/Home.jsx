@@ -191,7 +191,7 @@ function Home() {
     return (
         <div className="flex justify-center bg-gray-200 min-h-screen">
             <div className="relative w-full max-w-sm sm:max-w-md bg-white shadow-lg rounded-lg overflow-y-auto max-h-screen">
-                <div className="flex items-center bg-orange-500 text-white px-4 py-3">
+                <div className="flex items-center justify-between bg-orange-500 text-white px-4 py-3">
                     <h1 className="text-lg font-bold">ResQ</h1>
                     <Status />
                 </div>

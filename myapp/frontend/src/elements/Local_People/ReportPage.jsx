@@ -48,31 +48,13 @@ const Report = () => {
         setForm((prev) => ({ ...prev, [name]: value }));
     };
 
-    const handleFileChange = async (e) => {
-        const file = e.target.files[0];
-        if (!validFileType.includes(file.type)) {
-            setError("File must be in JPG/PNG format");
-            return;
-        }
-
-        setError('');
-
-        const form = new FormData();
-        form.append('image', file);
-
-        const response = await uploadImage(form);
-
-        setForm((prev) => ({ ...prev, situation_img: response.key }));
-        setFileName(file.name);
-    };
-
     const handleSubmit = async (e) => {
         e.preventDefault();
 
         try {
             const token = localStorage.getItem("cognitoToken");
 
-            const response = await fetch("http://44.220.134.131:3000/report-page", {
+            const response = await fetch("http://54.146.205.234:3000/report-page", {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
                 body: JSON.stringify({
@@ -164,24 +146,6 @@ const Report = () => {
                                 <option value="น้ำไม่ไหล">น้ำไม่ไหล</option>
                                 <option value="โจรกรรม">โจรกรรม</option>
                             </select>
-                        </div>
-
-
-                        <div>
-                            <label className="text-sm text-gray-700">แนบรูปประกอบ</label>
-                            <div className="w-full border rounded-md p-6 mt-1 flex justify-center items-center cursor-pointer">
-                                <label htmlFor="file-upload" className="cursor-pointer flex flex-col items-center text-gray-500">
-                                    <ImageIcon size={32} />
-                                    <span className="text-xs mt-1">{fileName}</span>
-                                </label>
-                                <input
-                                    id="file-upload"
-                                    type="file"
-                                    accept="image/png, image/jpeg"
-                                    onChange={handleFileChange}
-                                    className="hidden"
-                                />
-                            </div>
                         </div>
 
                         {error && <p className="text-red-500 text-sm">{error}</p>}
