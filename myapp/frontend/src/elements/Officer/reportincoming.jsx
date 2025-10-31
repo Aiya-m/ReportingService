@@ -12,7 +12,7 @@ const ReportIncoming = () => {
     useEffect(() => {
         const fetchPendingReports = async () => {
             try {
-                const res = await fetch("https://app.resq.fwh.is:5000/reports-pending");
+                const res = await fetch("http://localhost:5000/api/reports-pending");
                 const data = await res.json();
                 if (res.ok) {
                     setReports(data.reports || []);

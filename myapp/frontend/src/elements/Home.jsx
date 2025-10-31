@@ -65,7 +65,7 @@ function Home() {
                 description: selectedEmergency
             };
 
-            const res = await fetch("https://app.resq.fwh.is:5000/", {
+            const res = await fetch("http://localhost:5000/api/", {
                 method: "POST",
                 headers: {
                     "Content-Type": "application/json",
@@ -97,7 +97,7 @@ function Home() {
     React.useEffect(() => {
         const fetchCautionLocations = async () => {
             try {
-                const res = await fetch("https://app.resq.fwh.is:5000/caution_position");
+                const res = await fetch("http://localhost:5000/api/caution_position");
                 const data = await res.json();
                 setCautionLocations(data.locations);
             } catch (err) {

@@ -12,7 +12,7 @@ const ReportIncoming = () => {
     useEffect(() => {
         const fetchProgressReports = async () => {
             try {
-                const res = await fetch("https://app.resq.fwh.is:5000/reports-complete");
+                const res = await fetch("http://localhost:5000/api/reports-complete");
                 const data = await res.json();
                 if (res.ok) {
                     setReports(data.reports || []);

@@ -54,7 +54,7 @@ const Report = () => {
         try {
             const token = localStorage.getItem("cognitoToken");
 
-            const response = await fetch("https://app.resq.fwh.is:5000/report-page", {
+            const response = await fetch("http://localhost:5000/api/report-page", {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
                 body: JSON.stringify({

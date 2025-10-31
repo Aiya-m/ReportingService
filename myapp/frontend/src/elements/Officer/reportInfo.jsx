@@ -13,7 +13,7 @@ const ReportInfo = () => {
   useEffect(() => {
     const fetchReport = async () => {
       try {
-        const res = await fetch(`https://app.resq.fwh.is:5000/reports/${id}`);
+        const res = await fetch(`http://localhost:5000/api/reports/${id}`);
         const data = await res.json();
         if (res.ok) {
           setReport(data.report);
@@ -32,7 +32,7 @@ const ReportInfo = () => {
   const handleStatusChange = async (newStatus) => {
     setUpdating(true);
     try {
-      const res = await fetch(`https://app.resq.fwh.is:5000/reports/${id}/status`, {
+      const res = await fetch(`http://localhost:5000/api/reports/${id}/status`, {
         method: "PUT",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ status: newStatus }),

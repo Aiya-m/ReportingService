@@ -181,7 +181,7 @@ app.post('/api/disable-user', async (req, res) => {
 
 });
 
-app.post("/", async (req, res) => {
+app.post("/api/", async (req, res) => {
   const { firstname, lastname, phone_number, latitude, longitude, is_emergency, title, description } = req.body;
 
   if (!firstname || !lastname || !phone_number || !latitude || !longitude || !title) {
@@ -235,10 +235,9 @@ app.post("/", async (req, res) => {
     console.error(err);
     res.status(500).json({ message: "เกิดข้อผิดพลาด" });
   }
-  console.log("req.body =", req.body);
 });
 
-app.get("/reports", async (req, res) => {
+app.get("/api/reports", async (req, res) => {
   const { firstname, lastname } = req.query;
 
   if (!firstname || !lastname) {
@@ -258,7 +257,7 @@ app.get("/reports", async (req, res) => {
   }
 });
 
-app.get("/reports/pending", async (req, res) => {
+app.get("/api/reports/pending", async (req, res) => {
   try {
     const [rows] = await promisePool.execute(
       "SELECT id, title, address, status, DATE_FORMAT(created_at, '%d %b %Y') as date, TIME_FORMAT(created_at, '%H:%i น.') as time FROM Report WHERE status = 'รอดำเนินการ' ORDER BY created_at DESC"
@@ -270,11 +269,7 @@ app.get("/reports/pending", async (req, res) => {
   }
 });
 
-app.get("/api", (req, res) => {
-  res.json({ "users": ["userOne", "userTwo", "userThree"] })
-})
-
-app.get("/caution_position", async (req, res) => {
+app.get("/api/caution_position", async (req, res) => {
   try {
     const [rows] = await promisePool.execute(
       `SELECT latitude, longitude 
@@ -298,7 +293,7 @@ app.get("/caution_position", async (req, res) => {
 });
 
 
-app.get("/get-departments-list", (req, res) => {
+app.get("/api/get-departments-list", (req, res) => {
   const query = "SELECT * FROM Department";
   db.query(query, (err, results) => {
     if (err) {
@@ -377,7 +372,7 @@ app.post('/api/delete-user', async (req, res) => {
 });
 
 
-app.post("/report-page", async (req, res) => {
+app.post("/api/report-page", async (req, res) => {
   const { firstname, lastname, description, phone_number, address, title } = req.body;
 
   if (!description || !phone_number || !address || !title) {
@@ -398,7 +393,7 @@ app.post("/report-page", async (req, res) => {
 });
 
 
-app.get("/reports/:id", async (req, res) => {
+app.get("/api/reports/:id", async (req, res) => {
   console.log("in report")
   const { id } = req.params;
   const [rows] = await promisePool.execute("SELECT * FROM Report WHERE id = ?", [id]);
@@ -408,7 +403,7 @@ app.get("/reports/:id", async (req, res) => {
   res.json({ report: rows[0] });
 });
 
-app.put("/reports/:id/status", async (req, res) => {
+app.put("/api/reports/:id/status", async (req, res) => {
   const { id } = req.params;
   const { status } = req.body;
   await promisePool.execute("UPDATE Report SET status = ? WHERE id = ?", [status, id]);
@@ -416,47 +411,7 @@ app.put("/reports/:id/status", async (req, res) => {
 });
 
 
-app.post("/", async (req, res) => {
-  const { firstname, lastname, phone_number, latitude, longitude, is_emergency, title, description } = req.body;
-
-  if (!firstname || !lastname || !phone_number || !latitude || !longitude || !title) {
-    return res.status(400).json({ message: "กรอกข้อมูลให้ครบ" });
-  }
-
-  try {
-    const [result] = await promisePool.execute(
-      `INSERT INTO Report (firstname, lastname, phone_number, latitude, longitude, is_emergency, title, description) VALUES (?, ?, ?, ?, ?, ?, ?, ?)`,
-      [firstname, lastname, phone_number, latitude, longitude, is_emergency, title, description]
-    );
-    res.status(200).json({ message: "บันทึกข้อมูลเรียบร้อย", reportId: result.insertId });
-  } catch (err) {
-    console.error(err);
-    res.status(500).json({ message: "เกิดข้อผิดพลาด" });
-  }
-  console.log("📦 req.body =", req.body);
-});
-
-app.get("/reports", async (req, res) => {
-  const { firstname, lastname } = req.query;
-
-  if (!firstname || !lastname) {
-    return res.status(400).json({ message: "ต้องระบุ firstname และ lastname" });
-  }
-
-  try {
-    const [rows] = await promisePool.execute(
-      "SELECT id, title, address, status, DATE_FORMAT(created_at, '%d %b %Y') as date, TIME_FORMAT(created_at, '%H:%i น.') as time FROM Report WHERE firstname = ? AND lastname = ? ORDER BY created_at DESC",
-      [firstname, lastname]
-    );
-
-    res.status(200).json({ reports: rows });
-  } catch (err) {
-    console.error(err);
-    res.status(500).json({ message: "เกิดข้อผิดพลาดในการดึงข้อมูล" });
-  }
-});
-
-app.get("/reports-pending", async (req, res) => {
+app.get("/api/reports-pending", async (req, res) => {
   console.log("✅ /reports/pending route called");
   try {
     const [rows] = await promisePool.execute(
@@ -469,7 +424,7 @@ app.get("/reports-pending", async (req, res) => {
   }
 });
 
-app.get("/reports-progress", async (req, res) => {
+app.get("/api/reports-progress", async (req, res) => {
   try {
     const [rows] = await promisePool.execute(
       "SELECT id, title, address, status, DATE_FORMAT(created_at, '%d %b %Y') as date, TIME_FORMAT(created_at, '%H:%i น.') as time FROM Report WHERE status = 'กำลังดำเนินการ' ORDER BY created_at DESC"
@@ -481,7 +436,7 @@ app.get("/reports-progress", async (req, res) => {
   }
 });
 
-app.get("/reports-complete", async (req, res) => {
+app.get("/api/reports-complete", async (req, res) => {
   try {
     const [rows] = await promisePool.execute(
       "SELECT id, title, address, status, DATE_FORMAT(created_at, '%d %b %Y') as date, TIME_FORMAT(created_at, '%H:%i น.') as time FROM Report WHERE status = 'สำเร็จ' ORDER BY created_at DESC"
@@ -493,30 +448,7 @@ app.get("/reports-complete", async (req, res) => {
   }
 });
 
-app.get("/", (req, res) => {
-  res.send("Hello from backend");
-});
-
-app.get("/api", (req, res) => {
-  res.json({ "users": ["userOne", "userTwo", "userThree"] })
-})
-
-app.get("/caution_position", (req, res) => {
-  res.json({ "locations": [[100.7887341, 13.7348824], [98.9792, 18.7961], [102.839, 16.4419]] })
-})
-
-app.get("/get-departments-list", (req, res) => {
-  const query = "SELECT * FROM Department";
-  db.query(query, (err, results) => {
-    if (err) {
-      console.error("Query error:", err);
-      return res.status(500).json({ error: "Database query failed" });
-    }
-    res.json(results);
-  });
-});
-
-app.post("/manage-profile", async (req, res) => {
+app.post("/api/manage-profile", async (req, res) => {
 
   try {
     const { username, firstname, lastname, phone_number } = req.body;
