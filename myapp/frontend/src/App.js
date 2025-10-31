@@ -1,7 +1,7 @@
 import logo from './logo.svg';
 import './App.css';
 import React, { useEffect, useState } from 'react';
-import {BrowserRouter, Routes, Route} from 'react-router-dom';
+import { BrowserRouter, Routes, Route } from 'react-router-dom';
 import Home from './elements/Home';
 import RegisterL from './elements/Register';
 import AdminOfficer from './elements/Admin/officerPage'
@@ -16,6 +16,8 @@ import ReportComplete from './elements/Officer/reportcomplete'
 import Login from './elements/loginPage';
 import Confirmation from './elements/ConfirmRegister';
 import Forgotpassword from './elements/Forgotpassword';
+import ProtectedRoute from './components/ProtectedRoute';
+import RoleBasedGuard from './components/RoleBasedGuard';
 
 function App() {
 
@@ -38,15 +40,32 @@ function App() {
         <Route path="/register" element={<RegisterL />} />
         <Route path="/forgot-password" element={<Forgotpassword />} />
         <Route path="/ConfirmRegister" element={<Confirmation />} />
-        <Route path="/admin-officer" element={<AdminOfficer />} />
-        <Route path='/admin-localpeople' element={<AdminLocal />} />
-        <Route path='/report-page' element={<LocalReport />} />
-        <Route path='/profile' element={<Profile />} />
-        <Route path='/history-page' element={<HistoryPage />} />
-        <Route path='/manage-profile' element={<ManageProfile />} />
-        <Route path='/report-incoming' element={<ReportIncome />} />
-        <Route path='/report-in-progress' element={<ReportProgress />} />
-        <Route path='/report-complete' element={<ReportComplete />} />
+        {/* need to login */}
+        <Route element={<ProtectedRoute />}>
+
+          <Route element={<RoleBasedGuard allowedRoles={['admin']} />}>
+            <Route path="/admin-officer" element={<AdminOfficer />} />
+            <Route path='/admin-localpeople' element={<AdminLocal />} />
+          </Route>
+
+          <Route element={<RoleBasedGuard allowedRoles={['localpeople']} />}>
+            <Route path='/report-page' element={<LocalReport />} />
+            <Route path='/profile' element={<Profile />} />
+            <Route path='/history-page' element={<HistoryPage />} />
+            <Route path='/manage-profile' element={<ManageProfile />} />
+          </Route>
+
+          <Route element={<RoleBasedGuard allowedRoles={['officer']} />}>
+            <Route path='/report-incoming' element={<ReportIncome />} />
+            <Route path='/report-in-progress' element={<ReportProgress />} />
+            <Route path='/report-complete' element={<ReportComplete />} />
+          </Route>
+
+        </Route>
+
+        {/* <Route path="/unauthorized" element={<Unauthorized />} /> */}
+        {/* <Route path="*" element={<NotFound />} /> */}
+
       </Routes>
     </BrowserRouter>
     // <div>
