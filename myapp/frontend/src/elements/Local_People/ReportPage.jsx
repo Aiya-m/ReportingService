@@ -48,40 +48,37 @@ const Report = () => {
         setForm((prev) => ({ ...prev, [name]: value }));
     };
 
-    const handleFileChange = async (e) => {
+    const handleFileChange = (e) => {
         const file = e.target.files[0];
         if (!validFileType.includes(file.type)) {
             setError("File must be in JPG/PNG format");
             return;
         }
-
         setError('');
 
-        const form = new FormData();
-        form.append('image', file);
-
-        const response = await uploadImage(form);
-
-        setForm((prev) => ({ ...prev, situation_img: response.key }));
-        setFileName(file.name);
+        const reader = new FileReader();
+        reader.onloadend = () => {
+            setForm((prev) => ({ ...prev, situation_img: reader.result }));
+            setFileName(file.name);
+        };
+        reader.readAsDataURL(file); // แปลงไฟล์เป็น Base64
     };
 
     const handleSubmit = async (e) => {
         e.preventDefault();
 
         try {
-            const token = localStorage.getItem("cognitoToken");
-
             const response = await fetch("http://44.220.134.131:3000/report-page", {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
                 body: JSON.stringify({
-                    firstname: firstname,
-                    lastname: lastname,
+                    firstname,
+                    lastname,
                     description: form.detail,
-                    phone_number: phone_number,
+                    phone_number,
                     address: form.address,
-                    title: form.agency
+                    title: form.agency,
+                    situation_img: form.situation_img
                 })
             });
 
@@ -97,6 +94,7 @@ const Report = () => {
             alert("เกิดข้อผิดพลาดระหว่างเชื่อมต่อเซิร์ฟเวอร์");
         }
     };
+
 
     return (
         <div className="flex justify-center bg-gray-200 min-h-screen">
