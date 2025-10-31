@@ -2,7 +2,7 @@ import bodyParser from "body-parser";
 import express from "express";
 import cors from "cors";
 import multer from "multer";
-import mysql from "mysql2";
+import mysql, { format } from "mysql2";
 import { uploadToS3 } from "./s3.js";
 import nodemailer from "nodemailer";
 import {
@@ -228,14 +228,14 @@ app.post("/", async (req, res) => {
       });
 
     }
+    res.status(200).json({ message: "บันทึกข้อมูลเรียบร้อย", reportId: result.insertId });
   }
 
-    res.status(200).json({ message: "บันทึกข้อมูลเรียบร้อย", reportId: result.insertId });
-} catch (err) {
-  console.error(err);
-  res.status(500).json({ message: "เกิดข้อผิดพลาด" });
-}
-console.log("req.body =", req.body);
+  catch (err) {
+    console.error(err);
+    res.status(500).json({ message: "เกิดข้อผิดพลาด" });
+  }
+  console.log("req.body =", req.body);
 });
 
 app.get("/reports", async (req, res) => {

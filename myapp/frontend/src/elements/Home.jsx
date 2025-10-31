@@ -113,7 +113,7 @@ function Home() {
 
     // draw circles base on "cautionLocations"
     React.useEffect(() => {
-        if (cautionLocations.length > 0) {
+        if (cautionLocations) {
             const circles = turf.featureCollection(
                 cautionLocations.map((loc) =>
                     turf.circle(loc, 1, { steps: 64, units: "kilometers" })
