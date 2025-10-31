@@ -215,28 +215,27 @@ app.post("/", async (req, res) => {
   } else if (title === "โจรกรรม") {
     Department = "ตำรวจแห่งชาติ";
   }
-
+  
   try {
-    const command = new ListUsersCommand(params);
-    const response = await cognitoClient.send(command);
-    const formattedUsers = response.Users.map(user => getCognitoOfficer(user, Department)).filter(Boolean);
-    console.log("users", formattedUsers)
+    const [result] = await promisePool.execute(
+        `INSERT INTO Report (firstname, lastname, phone_number, latitude, longitude, is_emergency, title, description) VALUES (?, ?, ?, ?, ?, ?, ?, ?)`,
+        [firstname, lastname, phone_number, latitude, longitude, is_emergency, title, description]
+      );
     
-  } catch (error) {
-    console.error("ไม่สามารถแสดงข้อมูลจาก Cognito :", error);
-  }
+      const command = new ListUsersCommand(params);
+      const response = await cognitoClient.send(command);
+      const formattedUsers = response.Users.map(user => getCognitoOfficer(user, Department)).filter(Boolean);
+      for(let i=0; i<formattedUsers.length; i++){
+        await transporter.sendMail({
+          from: '"Emergency System" resqapp.app@gmail.com',
+          to: formattedUsers[i].email,
+          subject: "Emergency Reported",
+          text: "มีรายงานเหตุฉุกเฉิน กรุณาเข้าเว็ปไซต์เพื่อดูรายละเอียด",
+        });
+  
+      }
 
-
-
-  try {
-    // const [result] = await promisePool.execute(
-    //   `INSERT INTO Report (firstname, lastname, phone_number, latitude, longitude, is_emergency, title, description) VALUES (?, ?, ?, ?, ?, ?, ?, ?)`,
-    //   [firstname, lastname, phone_number, latitude, longitude, is_emergency, title, description]
-    // );
-
-
-
-    // res.status(200).json({ message: "บันทึกข้อมูลเรียบร้อย", reportId: result.insertId });
+    res.status(200).json({ message: "บันทึกข้อมูลเรียบร้อย", reportId: result.insertId });
   } catch (err) {
     console.error(err);
     res.status(500).json({ message: "เกิดข้อผิดพลาด" });
