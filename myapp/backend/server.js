@@ -6,7 +6,7 @@ import multer from "multer";
 import mysql from "mysql2";
 import { uploadToS3 } from "./s3.js";
 
-// dotenv.config();
+dotenv.config();
 const app = express();
 const PORT = 5000;
 app.use(cors());
@@ -70,7 +70,7 @@ app.post("/report-page", async (req, res) => {
 
 app.get("/reports/:id", async (req, res) => {
   const { id } = req.params;
-  const [rows] = await db.query("SELECT * FROM Report WHERE id = ?", [id]);
+  const [rows] = await promisePool.execute("SELECT * FROM Report WHERE id = ?", [id]);
   if (rows.length === 0) {
     return res.status(404).json({ message: "Report not found" });
   }

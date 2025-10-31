@@ -24,24 +24,6 @@ const ReportHistory = () => {
     }, [getSession]);
 
     useEffect(() => {
-        const fetchReports = async () => {
-            try {
-                const res = await fetch(`http://54.226.138.110:5000/reports?firstname=${firstname}&lastname=${lastname}`);
-                const data = await res.json();
-                console.log("📦 รายงานที่ดึงได้:", data);
-                setHistoryData(data.reports || []);
-            } catch (err) {
-                console.error("❌ ดึงข้อมูลไม่สำเร็จ:", err);
-            }
-        };
-
-        if (firstname && lastname) {
-            fetchReports();
-        }
-    }, [firstname, lastname]);
-
-
-    useEffect(() => {
         if (!firstname || !lastname) return;
 
         const fetchHistory = async () => {
