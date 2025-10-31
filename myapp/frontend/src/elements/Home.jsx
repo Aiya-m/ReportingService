@@ -127,20 +127,20 @@ function Home() {
     // watch user location
     React.useEffect(() => {
         if (!navigator.geolocation) {
-            console.warn("❌ Geolocation not supported");
+            console.warn("Geolocation not supported");
             return;
         }
 
         let watchId;
 
         const startWatch = (highAccuracy) => {
-            console.log(`📍 Starting geolocation (high accuracy: ${highAccuracy})`);
+            console.log(`Starting geolocation (high accuracy: ${highAccuracy})`);
 
             watchId = navigator.geolocation.watchPosition(
                 (position) => {
                     const { latitude, longitude } = position.coords;
                     setUserLocation([longitude, latitude]);
-                    console.log("✅ Location:", { latitude, longitude });
+                    console.log("Location:", { latitude, longitude });
 
                     if (mapRef.current) {
                         mapRef.current.jumpTo({
@@ -150,11 +150,11 @@ function Home() {
                     }
                 },
                 (error) => {
-                    console.error("⚠️ Geolocation watch error:", error);
+                    console.error("Geolocation watch error:", error);
 
                     // Fallback if high accuracy caused an issue
                     if (highAccuracy && error.code === error.TIMEOUT) {
-                        console.log("⏳ Retrying with enableHighAccuracy: false");
+                        console.log("Retrying with enableHighAccuracy: false");
                         navigator.geolocation.clearWatch(watchId);
                         startWatch(false);
                     }
@@ -287,7 +287,7 @@ function Home() {
                                         className="flex items-center justify-center gap-2 bg-red-600 text-white px-4 py-2 rounded-lg hover:bg-red-700 transition"
                                         onClick={() => {
                                             setSelectedEmergency(item.label);
-                                            setShowConfirm(true); // เปิด Popup ยืนยัน
+                                            setShowConfirm(true);
                                         }}
                                     >
                                         {item.icon}

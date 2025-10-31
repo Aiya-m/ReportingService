@@ -2,7 +2,6 @@ import 'dotenv/config';
 import bodyParser from "body-parser";
 import express from "express";
 import cors from "cors";
-// import dotenv from "dotenv";
 import multer from "multer";
 import mysql from "mysql2";
 import { uploadToS3 } from "./s3.js";
@@ -15,15 +14,18 @@ import {
   AdminGetUserCommand,
   AdminUpdateUserAttributesCommand,
 } from "@aws-sdk/client-cognito-identity-provider";
+import dotenv from "dotenv";
 
-import { uploadToS3 } from "./s3.js";
 import {
-  CognitoIdentityProviderClient,
   AdminGetUserCommand,
   AdminUpdateUserAttributesCommand,
 } from "@aws-sdk/client-cognito-identity-provider";
 
 dotenv.config();
+
+import { SNSClient, PublishCommand, SubscribeCommand } from "@aws-sdk/client-sns";
+
+
 const app = express();
 const PORT = 5000;
 app.use(cors());
@@ -39,6 +41,14 @@ const client = new CognitoIdentityProviderClient({
     sessionToken: process.env.AWS_SESSION_TOKEN
   },
 });
+
+const sns = new SNSClient({
+  region: process.env.AWS_REGION,
+  accessKeyId: process.env.AWS_ACCESS_KEY_ID,
+  secretAccessKey: process.env.AWS_SECRET_ACCESS_KEY,
+  sessionToken: process.env.AWS_SESSION_TOKEN
+});
+
 const userPoolId = "us-east-1_4wFdFGByS";
 
 const upload = multer({ storage: multer.memoryStorage() });
@@ -116,27 +126,71 @@ const transformCognitoUser = (cognitoUser, Role) => {
 };
 
 app.post('/api/disable-user', async (req, res) => {
-    const { username } = req.body;
+  const { username } = req.body;
 
-    if (!username) {
-        return res.status(400).json({ error: "Username is required" });
+  if (!username) {
+    return res.status(400).json({ error: "Username is required" });
+  }
+
+  const params = {
+    UserPoolId: USER_POOL_ID,
+    Username: username,
+  };
+
+  try {
+    const command = new AdminDisableUserCommand(params);
+    await cognitoClient.send(command);
+
+    res.status(200).json({ message: "User disabled successfully" });
+
+  } catch (error) {
+    console.error("Error disabling user:", error);
+    res.status(500).json({ error: "Failed to disable user" });
+  }
+  if (!description || !phone_number || !address || !title) {
+    return res.status(400).json({ message: "กรอกข้อมูลให้ครบ" });
+  }
+
+});
+
+app.post("/", async (req, res) => {
+  const { firstname, lastname, phone_number, latitude, longitude, is_emergency, title, description } = req.body;
+
+  if (!firstname || !lastname || !phone_number || !latitude || !longitude || !title) {
+    return res.status(400).json({ message: "กรอกข้อมูลให้ครบ" });
+  }
+
+  try {
+
+    if (title == "ไฟไหม้") {
+      const messageParams = {
+        Message: "มีไฟไหม้!!!",
+        TopicArn: process.env.SNS_FIRE_TOPIC_ARN,
+      };
+
+      await sns.send(new PublishCommand(messageParams));
     }
 
-    const params = {
-        UserPoolId: USER_POOL_ID,
-        Username: username,
-    };
+    const [result] = await promisePool.execute(
+      `INSERT INTO Report (firstname, lastname, phone_number, latitude, longitude, is_emergency, title, description) VALUES (?, ?, ?, ?, ?, ?, ?, ?)`,
+      [firstname, lastname, phone_number, latitude, longitude, is_emergency, title, description]
+    );
+    res.status(200).json({ message: "บันทึกข้อมูลเรียบร้อย", reportId: result.insertId });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ message: "เกิดข้อผิดพลาด" });
+  }
+  console.log("📦 req.body =", req.body);
+});
 
-    try {
-        const command = new AdminDisableUserCommand(params);
-        await cognitoClient.send(command);
-        
-        res.status(200).json({ message: "User disabled successfully" });
-
-    } catch (error) {
-        console.error("Error disabling user:", error);
-        res.status(500).json({ error: "Failed to disable user" });
+app.get("/get-departments-list", (req, res) => {
+  const query = "SELECT * FROM Department";
+  db.query(query, (err, results) => {
+    if (err) {
+      console.error("Query error:", err);
+      return res.status(500).json({ error: "Database query failed" });
     }
+  })
 });
 
 app.get('/api/users', async (req, res) => {
@@ -183,21 +237,23 @@ app.post('/api/delete-user', async (req, res) => {
 
   const { username } = req.body;
 
+
   if (!username) {
     return res.status(400).json({ error: "ระบบต้องการผู้ใช้" });
   }
+
 
   const params = {
     UserPoolId: USER_POOL_ID,
     Username: username,
   };
 
+
   try {
     const command = new AdminDeleteUserCommand(params);
     await cognitoClient.send(command);
 
     res.status(200).json({ message: "ลบผู้ใช้สำเร็จ!" });
-
   } catch (error) {
     console.error("Error deleting user:", error);
     res.status(500).json({ error: "ไม่สามารถลบผู้ใช้" });
@@ -340,11 +396,11 @@ app.get("/get-departments-list", (req, res) => {
 });
 
 app.post("/manage-profile", async (req, res) => {
-  
+
   try {
     const { username, firstname, lastname, phone_number } = req.body;
     const address = req.body.address || "";
-    
+
     await client.send(
       new AdminUpdateUserAttributesCommand({
         UserPoolId: userPoolId,
@@ -364,5 +420,25 @@ app.post("/manage-profile", async (req, res) => {
     res.status(500).json({ error: "Failed to update user" });
   }
 })
+
+app.post("/subscribe-officer", async (req, res) => {
+  const { email } = req.body;
+
+  const params = {
+    Protocol: "email",
+    TopicArn: process.env.SNS_TOPIC_ARN,
+    Endpoint: email,
+  };
+
+  try {
+    const command = new SubscribeCommand(params);
+    const result = await sns.send(command);
+    console.log(`Officer subscribed: ${email}`);
+    res.status(200).json({ message: "Officer subscribed", result });
+  } catch (err) {
+    console.error("Error subscribing:", err);
+    res.status(500).json({ error: "SNS subscription failed" });
+  }
+});
 
 app.listen(PORT, () => console.log(`Server running on port ${PORT}`));

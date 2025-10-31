@@ -134,6 +134,7 @@ const Register = () => {
         navigate('/ConfirmRegister', { state: userData });
       }
     );
+
   };
 
   return (
