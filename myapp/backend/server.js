@@ -17,11 +17,6 @@ import {
 } from "@aws-sdk/client-cognito-identity-provider";
 import dotenv from "dotenv";
 
-import {
-  AdminGetUserCommand,
-  AdminUpdateUserAttributesCommand,
-} from "@aws-sdk/client-cognito-identity-provider";
-
 dotenv.config();
 
 const app = express();
