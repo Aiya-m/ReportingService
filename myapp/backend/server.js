@@ -118,7 +118,7 @@ app.get("/reports", async (req, res) => {
   }
 });
 
-app.get("/reports/pending", async (req, res) => {
+app.get("/reports-pending", async (req, res) => {
   console.log("✅ /reports/pending route called");
   try {
     const [rows] = await promisePool.execute(
