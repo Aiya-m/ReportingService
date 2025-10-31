@@ -95,8 +95,8 @@ app.post("/", async (req, res) => {
 
   try {
     const [result] = await promisePool.execute(
-      `INSERT INTO Report (firstname, lastname, phone_number, latitude, longitude, is_emergency, title, description) VALUES (?, ?, ?, ?, ?, ?, ?, ?)`,
-      [firstname, lastname, phone_number, latitude, longitude, is_emergency, title, description]
+      `INSERT INTO Report (firstname, lastname, phone_number, latitude, longitude, is_emergency, title, description, attachment) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+      [firstname, lastname, phone_number, latitude, longitude, is_emergency, title, description, attachment]
     );
     res.status(200).json({ message: "บันทึกข้อมูลเรียบร้อย", reportId: result.insertId });
   } catch (err) {

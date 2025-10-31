@@ -19,7 +19,7 @@ const Report = () => {
         phone_num: "",
         address: "",
         agency: "",
-        situation_img: "",
+        attachment: "",
     });
 
     const [firstname, setFirstName] = useState('');
@@ -58,7 +58,7 @@ const Report = () => {
 
         const reader = new FileReader();
         reader.onloadend = () => {
-            setForm((prev) => ({ ...prev, situation_img: reader.result }));
+            setForm((prev) => ({ ...prev, attachment: reader.result }));
             setFileName(file.name);
         };
         reader.readAsDataURL(file); // แปลงไฟล์เป็น Base64
@@ -78,7 +78,7 @@ const Report = () => {
                     phone_number,
                     address: form.address,
                     title: form.agency,
-                    situation_img: form.situation_img
+                    attachment: form.attachment
                 })
             });
 
