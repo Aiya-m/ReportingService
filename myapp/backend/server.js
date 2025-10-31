@@ -5,6 +5,7 @@ import cors from "cors";
 import multer from "multer";
 import mysql from "mysql2";
 import { uploadToS3 } from "./s3.js";
+import nodemailer from "nodemailer";
 import {
   CognitoIdentityProviderClient,
   ListUsersCommand,
@@ -23,11 +24,17 @@ import {
 
 dotenv.config();
 
-import { SNSClient, PublishCommand, SubscribeCommand } from "@aws-sdk/client-sns";
-
-
 const app = express();
 const PORT = 5000;
+
+const transporter = nodemailer.createTransport({
+  service: "gmail",
+  auth: {
+    user: "resqapp.app@gmail.com",
+    pass: "azpg khqs blhx brba"
+  },
+});
+
 app.use(cors());
 app.use(express.json({ limit: "20mb" }));
 app.use(bodyParser.json({ limit: "20mb" }));
@@ -40,13 +47,6 @@ const client = new CognitoIdentityProviderClient({
     secretAccessKey: process.env.AWS_SECRET_ACCESS_KEY,
     sessionToken: process.env.AWS_SESSION_TOKEN
   },
-});
-
-const sns = new SNSClient({
-  region: process.env.AWS_REGION,
-  accessKeyId: process.env.AWS_ACCESS_KEY_ID,
-  secretAccessKey: process.env.AWS_SECRET_ACCESS_KEY,
-  sessionToken: process.env.AWS_SESSION_TOKEN
 });
 
 const userPoolId = "us-east-1_4wFdFGByS";
@@ -125,6 +125,40 @@ const transformCognitoUser = (cognitoUser, Role) => {
   return null;
 };
 
+const getCognitoOfficer = (cognitoUser, Department) => {
+  const attributes = cognitoUser.Attributes.reduce((acc, attr) => {
+    acc[attr.Name] = attr.Value;
+    return acc;
+  }, {});
+
+  let displayStatus;
+
+  if (cognitoUser.Enabled === false) {
+    displayStatus = 'Disabled';
+  } else {
+    displayStatus = 'Enabled';
+  }
+
+  if (attributes['custom:department'] == Department) {
+    return {
+      username: cognitoUser.Username,
+      status: cognitoUser.UserStatus,
+      createdAt: cognitoUser.UserCreateDate,
+      email: attributes.email,
+      phone: attributes.phone_number,
+      firstname: attributes.given_name,
+      lastname: attributes.family_name,
+      address: attributes['custom:address'],
+      department: attributes['custom:department'],
+      officer_id: attributes['custom:officer_id'],
+      citizen_id: attributes['custom:citizen_id'],
+      displayStatus: displayStatus
+    };
+  }
+  return null;
+};
+
+
 app.post('/api/disable-user', async (req, res) => {
   const { username } = req.body;
 
@@ -159,23 +193,50 @@ app.post("/", async (req, res) => {
   if (!firstname || !lastname || !phone_number || !latitude || !longitude || !title) {
     return res.status(400).json({ message: "กรอกข้อมูลให้ครบ" });
   }
+  const params = {
+    UserPoolId: USER_POOL_ID,
+  };
+
+  let Department;
+  if (title === "ไฟไหม้") {
+    Department = "สถานีดับเพลิง";
+  } else if (title === "อุบัติเหตุท้องถนน") {
+    Department = "ตำรวจจราจร";
+  } else if (title === "บาดเจ็บ/ป่วยฉุกเฉิน") {
+    Department = "โรงพยาบาล";
+  } else if (title === "ทะเลาะวิวาท") {
+    Department = "ตำรวจแห่งชาติ";
+  } else if (title === "สัตว์อันตราย") {
+    Department = "กู้ภัย";
+  } else if (title === "ไฟดับ") {
+    Department = "การไฟฟ้า";
+  } else if (title === "น้ำไม่ไหล") {
+    Department = "การประปา";
+  } else if (title === "โจรกรรม") {
+    Department = "ตำรวจแห่งชาติ";
+  }
 
   try {
+    const command = new ListUsersCommand(params);
+    const response = await cognitoClient.send(command);
+    const formattedUsers = response.Users.map(user => getCognitoOfficer(user, Department)).filter(Boolean);
+    console.log("users", formattedUsers)
+    
+  } catch (error) {
+    console.error("ไม่สามารถแสดงข้อมูลจาก Cognito :", error);
+  }
 
-    if (title == "ไฟไหม้") {
-      const messageParams = {
-        Message: "มีไฟไหม้!!!",
-        TopicArn: process.env.SNS_FIRE_TOPIC_ARN,
-      };
 
-      await sns.send(new PublishCommand(messageParams));
-    }
 
-    const [result] = await promisePool.execute(
-      `INSERT INTO Report (firstname, lastname, phone_number, latitude, longitude, is_emergency, title, description) VALUES (?, ?, ?, ?, ?, ?, ?, ?)`,
-      [firstname, lastname, phone_number, latitude, longitude, is_emergency, title, description]
-    );
-    res.status(200).json({ message: "บันทึกข้อมูลเรียบร้อย", reportId: result.insertId });
+  try {
+    // const [result] = await promisePool.execute(
+    //   `INSERT INTO Report (firstname, lastname, phone_number, latitude, longitude, is_emergency, title, description) VALUES (?, ?, ?, ?, ?, ?, ?, ?)`,
+    //   [firstname, lastname, phone_number, latitude, longitude, is_emergency, title, description]
+    // );
+
+
+
+    // res.status(200).json({ message: "บันทึกข้อมูลเรียบร้อย", reportId: result.insertId });
   } catch (err) {
     console.error(err);
     res.status(500).json({ message: "เกิดข้อผิดพลาด" });
@@ -420,25 +481,5 @@ app.post("/manage-profile", async (req, res) => {
     res.status(500).json({ error: "Failed to update user" });
   }
 })
-
-app.post("/subscribe-officer", async (req, res) => {
-  const { email } = req.body;
-
-  const params = {
-    Protocol: "email",
-    TopicArn: process.env.SNS_TOPIC_ARN,
-    Endpoint: email,
-  };
-
-  try {
-    const command = new SubscribeCommand(params);
-    const result = await sns.send(command);
-    console.log(`Officer subscribed: ${email}`);
-    res.status(200).json({ message: "Officer subscribed", result });
-  } catch (err) {
-    console.error("Error subscribing:", err);
-    res.status(500).json({ error: "SNS subscription failed" });
-  }
-});
 
 app.listen(PORT, () => console.log(`Server running on port ${PORT}`));

@@ -65,7 +65,7 @@ function Home() {
                 description: selectedEmergency
             };
 
-            const res = await fetch("http://52.87.254.106:3000/", {
+            const res = await fetch("http://localhost:5000/", {
                 method: "POST",
                 headers: {
                     "Content-Type": "application/json",
