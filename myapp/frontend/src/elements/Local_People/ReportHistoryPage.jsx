@@ -29,7 +29,7 @@ const ReportHistory = () => {
         const fetchHistory = async () => {
             try {
                 const res = await fetch(
-                    `http://54.146.205.234:5000/reports?firstname=${firstname}&lastname=${lastname}`
+                    `https://app.resq.fwh.is:5000/reports?firstname=${firstname}&lastname=${lastname}`
                 );
                 const data = await res.json();
                 if (res.ok) {
