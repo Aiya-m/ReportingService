@@ -19,7 +19,7 @@ const Report = () => {
         phone_num: "",
         address: "",
         agency: "",
-        attachment: "",
+        situation_img: "",
     });
 
     const [firstname, setFirstName] = useState('');
@@ -48,44 +48,42 @@ const Report = () => {
         setForm((prev) => ({ ...prev, [name]: value }));
     };
 
-    const handleFileChange = (e) => {
+    const handleFileChange = async (e) => {
         const file = e.target.files[0];
         if (!validFileType.includes(file.type)) {
             setError("File must be in JPG/PNG format");
             return;
         }
+
         setError('');
 
-        const reader = new FileReader();
-        reader.onloadend = () => {
-            setForm((prev) => ({ ...prev, attachment: reader.result }));
-            setFileName(file.name);
-        };
-        reader.readAsDataURL(file); // แปลงไฟล์เป็น Base64
+        const form = new FormData();
+        form.append('image', file);
+
+        const response = await uploadImage(form);
+
+        setForm((prev) => ({ ...prev, situation_img: response.key }));
+        setFileName(file.name);
     };
 
     const handleSubmit = async (e) => {
         e.preventDefault();
 
-        const controller = new AbortController();
-        const timeoutId = setTimeout(() => controller.abort(), 300000); // 5 นาที
-
         try {
+            const token = localStorage.getItem("cognitoToken");
+
             const response = await fetch("http://44.220.134.131:3000/report-page", {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
                 body: JSON.stringify({
-                    firstname,
-                    lastname,
+                    firstname: firstname,
+                    lastname: lastname,
                     description: form.detail,
-                    phone_number,
+                    phone_number: phone_number,
                     address: form.address,
-                    title: form.agency,
-                    attachment: form.attachment
-                }),
-                signal: controller.signal
+                    title: form.agency
+                })
             });
-            clearTimeout(timeoutId);
 
             const data = await response.json();
             if (response.ok) {
@@ -95,16 +93,10 @@ const Report = () => {
                 alert("เกิดข้อผิดพลาด: " + data.message);
             }
         } catch (err) {
-            if (err.name === "AbortError") {
-                alert("Request timeout: กรุณาลองอัพโหลดใหม่");
-            } else {
-                console.error(err);
-                alert("เกิดข้อผิดพลาดระหว่างเชื่อมต่อเซิร์ฟเวอร์");
-            }
+            console.error(err);
+            alert("เกิดข้อผิดพลาดระหว่างเชื่อมต่อเซิร์ฟเวอร์");
         }
-
     };
-
 
     return (
         <div className="flex justify-center bg-gray-200 min-h-screen">

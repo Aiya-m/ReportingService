@@ -1,4 +1,3 @@
-import 'dotenv/config';
 import bodyParser from "body-parser";
 import express from "express";
 import cors from "cors";
@@ -377,7 +376,7 @@ app.post('/api/delete-user', async (req, res) => {
 
 
 app.post("/report-page", async (req, res) => {
-  const { firstname, lastname, description, phone_number, address, title, attachment } = req.body;
+  const { firstname, lastname, description, phone_number, address, title } = req.body;
 
   if (!description || !phone_number || !address || !title) {
     return res.status(400).json({ message: "กรอกข้อมูลให้ครบ" });
@@ -385,8 +384,8 @@ app.post("/report-page", async (req, res) => {
 
   try {
     const [result] = await promisePool.execute(
-      `INSERT INTO Report (firstname, lastname, description, phone_number, address, title, attachment) VALUES (?, ?, ?, ?, ?, ?, ?)`,
-      [firstname, lastname, description, phone_number, address, title, attachment]
+      `INSERT INTO Report (firstname, lastname, description, phone_number, address, title) VALUES (?, ?, ?, ?, ?, ?)`,
+      [firstname, lastname, description, phone_number, address, title]
     );
     res.status(200).json({ message: "บันทึกข้อมูลเรียบร้อย", reportId: result.insertId })
   } catch (err) {
@@ -415,7 +414,7 @@ app.put("/reports/:id/status", async (req, res) => {
 
 
 app.post("/", async (req, res) => {
-  const { firstname, lastname, phone_number, latitude, longitude, is_emergency, title, description, attachment } = req.body;
+  const { firstname, lastname, phone_number, latitude, longitude, is_emergency, title, description } = req.body;
 
   if (!firstname || !lastname || !phone_number || !latitude || !longitude || !title) {
     return res.status(400).json({ message: "กรอกข้อมูลให้ครบ" });
@@ -423,8 +422,8 @@ app.post("/", async (req, res) => {
 
   try {
     const [result] = await promisePool.execute(
-      `INSERT INTO Report (firstname, lastname, phone_number, latitude, longitude, is_emergency, title, description, attachment) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)`,
-      [firstname, lastname, phone_number, latitude, longitude, is_emergency, title, description, attachment]
+      `INSERT INTO Report (firstname, lastname, phone_number, latitude, longitude, is_emergency, title, description) VALUES (?, ?, ?, ?, ?, ?, ?, ?)`,
+      [firstname, lastname, phone_number, latitude, longitude, is_emergency, title, description]
     );
     res.status(200).json({ message: "บันทึกข้อมูลเรียบร้อย", reportId: result.insertId });
   } catch (err) {
@@ -489,6 +488,10 @@ app.get("/reports-complete", async (req, res) => {
     console.error(err);
     res.status(500).json({ message: "เกิดข้อผิดพลาดในการดึงข้อมูล" });
   }
+});
+
+app.get("/", (req, res) => {
+  res.send("Hello from backend");
 });
 
 app.get("/api", (req, res) => {
