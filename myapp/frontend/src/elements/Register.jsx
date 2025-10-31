@@ -25,22 +25,6 @@ const BackIcon = () => (
   </svg>
 );
 
-// const ToggleSwitch = ({ checked, onChange }) => (
-//   <button
-//     type="button"
-//     onClick={onChange}
-//     className={`relative inline-flex items-center h-6 rounded-full w-11 transition-colors ${
-//       checked ? 'bg-orange-600' : 'bg-gray-300'
-//     }`}
-//   >
-//     <span
-//       className={`inline-block w-4 h-4 transform bg-white rounded-full transition-transform ${
-//         checked ? 'translate-x-6' : 'translate-x-1'
-//       }`}
-//     />
-//   </button>
-// );
-
 const Register = () => {
   const navigate = useNavigate();
   const [loading, setLoading] = useState(false);
@@ -50,13 +34,13 @@ const Register = () => {
   const currentSchema = isOfficer ? officerRegisterSchema : userRegisterSchema;
 
   const {
-    register,           // (A) ฟังก์ชันสำหรับผูก input
-    handleSubmit,       // (B) ฟังก์ชันสำหรับหุ้ม onSubmit ของ form
-    formState: { errors }, // (C) Object ที่เก็บ error ทั้งหมด (มาจาก Yup)
-    setError,           // (D) ฟังก์ชันสำหรับตั้ง error จาก Server (Cognito)
+    register,
+    handleSubmit,
+    formState: { errors },
+    setError,
     reset,
   } = useForm({
-    resolver: yupResolver(currentSchema), // (E) บอกให้ใช้กฎจาก Yup
+    resolver: yupResolver(currentSchema),
   });
 
   useEffect(() => {
@@ -68,23 +52,10 @@ const Register = () => {
     reset();
   }, [isOfficer, reset]);
 
-  // const handleToggleChange = () => {
-  //   setIsOfficer(prev => !prev);
-  // };
   const handleRoleChange = (newRole) => {
     console.log("Selected role:", newRole);
     setIsOfficer(newRole === ACCOUNT_TYPES.OFFICER);
   };
-
-  // const handleChange = (e) => {
-  //   const { name, value } = e.target;
-  //   setForm((prev) => ({ ...prev, [name]: value }));
-
-  //   // เคลียร์ Error เมื่อผู้ใช้เริ่มพิมพ์แก้
-  //   if (errors[name]) {
-  //     setErrors((prev) => ({ ...prev, [name]: null }));
-  //   }
-  // };
 
   const [departments, setDepartments] = useState([]);
   const [loadingDepartments, setLoadingDepartments] = useState(false);
@@ -109,8 +80,7 @@ const Register = () => {
     setLoading(true);
     console.log("Submitting data for:", isOfficer ? "Officer" : "User", data);
     const userData = { username: data.username, email: data.email, role: role }
-
-    // Cognito needs attributes as "CognitoUserAttribute" objects
+    
     const attributes = [
       new CognitoUserAttribute({ Name: "email", Value: data.email }),
       new CognitoUserAttribute({ Name: "given_name", Value: data.firstName }),
@@ -171,9 +141,6 @@ const Register = () => {
       </h2>
 
       <div className="flex items-center justify-center space-x-3 mb-6">
-        {/* <span className="font-medium text-white">ผู้ใช้ทั่วไป</span>
-        <ToggleSwitch checked={isOfficer} onChange={handleToggleChange} />
-        <span className="font-medium text-white">เจ้าหน้าที่</span> */}
         <RoleToggle
           onToggleChange={handleRoleChange}
           currentType={isOfficer ? ACCOUNT_TYPES.OFFICER : ACCOUNT_TYPES.CITIZEN}

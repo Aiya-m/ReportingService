@@ -18,14 +18,12 @@ const RoleToggle = ({ onToggleChange, defaultType = ACCOUNT_TYPES.LOCALPEOPLE })
   const handleToggle = (type) => {
     setAccountType(type);
     if (onToggleChange) {
-      onToggleChange(type); // แจ้ง Component แม่ ว่ามีการเปลี่ยนแปลง
+      onToggleChange(type);
     }
   };
 
-  // Active btn
   const activeClasses = "bg-neutral-800 text-white shadow-lg";
-  
-  // Inactive btn
+
   const inactiveClasses = "bg-gray-100 text-gray-700 hover:bg-gray-200 border border-gray-300";
 
   return (

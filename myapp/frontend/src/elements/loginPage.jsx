@@ -12,19 +12,18 @@ const Login = () => {
     const { authenticate } = useContext(AccountContext);
 
     const { 
-        register,           // (A) ฟังก์ชันสำหรับผูก input
-        handleSubmit,       // (B) ฟังก์ชันสำหรับหุ้ม onSubmit
-        formState: { errors }, // (C) Object ที่เก็บ error (จาก Yup)
-        setError,           // (D) ฟังก์ชันสำหรับตั้ง error จาก Server (Cognito)
+        register,
+        handleSubmit,
+        formState: { errors },
+        setError,
         clearErrors
     } = useForm({
-        resolver: yupResolver(loginSchema), // (E) บอกให้ใช้กฎจาก Yup
+        resolver: yupResolver(loginSchema),
     });
 
   const onSubmit = (data) => {
     setLoading(true);
     const { username, password, email } = data;
-    // ลบ Error เก่า (ถ้ามี)
     clearErrors("general");
 
     authenticate(username, password, email)
@@ -49,7 +48,6 @@ const Login = () => {
           setError("general", { type: "server", message: "ชื่อผู้ใช้หรือรหัสผ่านไม่ถูกต้อง" });
         } else if (err.name === "UserNotConfirmedException") {
           setError("general", { type: "server", message: "บัญชีนี้ยังไม่ได้ยืนยันตัวตน" });
-          // navigate('/ConfirmRegister', { state: { username: data.email } });
         } else {
           setError("general", { type: "server", message: err.message });
         }

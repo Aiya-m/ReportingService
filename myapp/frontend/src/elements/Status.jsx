@@ -15,10 +15,10 @@ const Status = () => {
             setUsername(payload["cognito:username"]);
             setStatus(true);
         })
-        .catch((err) => {
-            console.log("Failed to get session: ", err)
-            setUsername("");
-        });
+            .catch((err) => {
+                console.log("Failed to get session: ", err)
+                setUsername("");
+            });
     }, [getSession]);
 
     const handleLogout = () => {
@@ -27,7 +27,11 @@ const Status = () => {
         navigate('/login');
     };
 
-    return <div>{username ? (<button onClick={handleLogout}> สวัสดี, {username}! Logout </button>) : ("กรุณาเข้าสู่ระบบ")}</div>;
+    const handleLogin = () => {
+        navigate('/login');
+    }
+
+    return <div>{username ? (<button onClick={handleLogout}> สวัสดี, {username}! ออกจากระบบ </button>) : (<button onClick={handleLogin}>กรุณาเข้าสู่ระบบ</button>)}</div>;
 };
 
 export default Status;

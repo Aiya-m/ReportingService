@@ -399,6 +399,7 @@ app.post("/report-page", async (req, res) => {
 
 
 app.get("/reports/:id", async (req, res) => {
+  console.log("in report")
   const { id } = req.params;
   const [rows] = await promisePool.execute("SELECT * FROM Report WHERE id = ?", [id]);
   if (rows.length === 0) {

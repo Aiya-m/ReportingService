@@ -68,12 +68,9 @@ const DetailPopupLayout = ({ user, onActionSuccess, role }) => {
     }
     return (
         <div className="flex bg-gray-100">
-            {/* ปุ่มเปิด Popup */}
             <button onClick={() => setIsOpen(true)} className="px-6 py-2 bg-orange-500 text-white rounded hover:bg-orange-800">
                 เพิ่มเติม
             </button>
-
-            {/* Popup */}
             {isOpen && (
                 <div className="fixed inset-0 flex items-center justify-center bg-gray-800">
                     <div className="bg-white p-6 pr-10 pl-10 rounded-lg shadow-lg w-150">

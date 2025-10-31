@@ -22,17 +22,6 @@ import ReportInfo from './elements/Officer/reportInfo'
 
 function App() {
 
-  // const [backendData, setBackendData] = useState([{}])
-
-  // useEffect(() => {
-  //   fetch("/api").then(
-  //     response => response.json()
-  //   ).then(
-  //     data => {
-  //       setBackendData(data)
-  //     }
-  //   )
-  // }, [])
   return (
     <BrowserRouter>
       <Routes>
@@ -41,7 +30,6 @@ function App() {
         <Route path="/register" element={<RegisterL />} />
         <Route path="/forgot-password" element={<Forgotpassword />} />
         <Route path="/ConfirmRegister" element={<Confirmation />} />
-        {/* need to login */}
         <Route element={<ProtectedRoute />}>
 
           <Route element={<RoleBasedGuard allowedRoles={['admin']} />}>
@@ -65,38 +53,8 @@ function App() {
           </Route>
 
         </Route>
-
-        {/* <Route path="/unauthorized" element={<Unauthorized />} /> */}
-        {/* <Route path="*" element={<NotFound />} /> */}
       </Routes>
     </BrowserRouter>
-    // <div>
-    //     {(typeof backendData.users === "undefined") ? (
-    //       <p>loading....</p> 
-    //     ): (
-    //       backendData.users.map((user, i) => (
-    //         <p key={i}>{user}</p>
-    //       ))
-    //     )}
-
-
-    // </div>
-    // <div className="App">
-    //   <header className="App-header">
-    //     <img src={logo} className="App-logo" alt="logo" />
-    //     <p>
-    //       Edit <code>src/App.js</code> and save to reload.
-    //     </p>
-    //     <a
-    //       className="App-link"
-    //       href="https://reactjs.org"
-    //       target="_blank"
-    //       rel="noopener noreferrer"
-    //     >
-    //       Learn React
-    //     </a>
-    //   </header>
-    // </div>
   );
 }
 

@@ -2,6 +2,7 @@ import React, { useState, useEffect } from "react";
 import { ArrowLeft, Clock, MapPin, FileText } from "lucide-react";
 import OfficerNavbar from "./officerNav";
 import { useNavigate } from "react-router-dom";
+import Status from '../Status'
 
 const ReportIncoming = () => {
     const [reports, setReports] = useState([]);
@@ -31,8 +32,9 @@ const ReportIncoming = () => {
     return (
         <div className="flex justify-center bg-gray-200 min-h-screen">
             <div className="relative w-full max-w-sm sm:max-w-md bg-orange-500 shadow-lg rounded-lg h-screen flex flex-col">
-                <div className="flex items-center bg-orange-500 text-white px-4 py-3 flex-shrink-0">
+                <div className="flex items-center justify-between bg-orange-500 text-white px-4 py-3">
                     <h1 className="text-lg font-bold">ResQ</h1>
+                    <Status />
                 </div>
 
                 <div className="flex-grow overflow-y-auto px-4 py-3 space-y-3">

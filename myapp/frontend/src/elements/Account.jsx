@@ -27,7 +27,6 @@ const Account = (props) => {
 
     useEffect(() => {
         getSession().then(session => {
-            // ถอดรหัส Token เพื่อเอา "Roles"
             const payload = session.getIdToken().payload;
             const roles = payload['custom:Role'] ? [payload['custom:Role']] : [];
             setUser({
@@ -37,7 +36,6 @@ const Account = (props) => {
             });
             setIsLoading(false);
         }).catch((err) => {
-            // ไม่ได้ล็อกอิน
             setUser(null);
             setIsLoading(false);
         });
@@ -104,7 +102,6 @@ const Account = (props) => {
                     if (err) return reject(err);
                     const result = {};
                     attributes.forEach(attr => (result[attr.getName()] = attr.getValue()));
-                    // Also include username from ID token
                     result["cognito:username"] = session.getIdToken().payload["cognito:username"];
                     resolve(result);
                 });

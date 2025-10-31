@@ -21,13 +21,12 @@ const BackIcon = () => (
 );
 
 const ForgotPassword = () => {
-    const [stage, setStage] = useState(1); // 1 = email stage, 2 = code stage
+    const [stage, setStage] = useState(1);
     const [email, setEmail] = useState("");
     const [code, setCode] = useState("");
     const [password, setPassword] = useState("");
     const [confirmPassword, setConfirmPassword] = useState("");
 
-    // State สำหรับ UI ---
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState("");
     const [success, setSuccess] = useState("");
@@ -42,7 +41,6 @@ const ForgotPassword = () => {
 
     const sendCode = event => {
         event.preventDefault();
-        // อัปเดต State ---
         setLoading(true);
         setError("");
         setSuccess("");
@@ -82,7 +80,7 @@ const ForgotPassword = () => {
             console.log("onSuccess:", data);
             setLoading(false);
             setSuccess("เปลี่ยนรหัสผ่านสำเร็จ!");
-            // ส่งกลับไปหน้า Login หลังจาก 2 วินาที
+
             setTimeout(() => navigate('/login'), 2000);
         },
         onFailure: err => {

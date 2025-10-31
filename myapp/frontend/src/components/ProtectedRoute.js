@@ -11,11 +11,10 @@ const AuthGuard = () => {
     }
 
     if (!user) {
-        // เด้งไปหน้า Login
         return <Navigate to="/login" state={{ from: location }} replace />;
     }
 
-    return <Outlet />; // ให้ผ่าน
+    return <Outlet />;
 };
 
 export default AuthGuard;

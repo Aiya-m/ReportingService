@@ -94,8 +94,6 @@ function Home() {
         return () => clearInterval(timerID);
     }, []);
 
-
-    // fetch to get cautionLocation from server.js
     React.useEffect(() => {
         const fetchCautionLocations = async () => {
             try {
@@ -110,8 +108,6 @@ function Home() {
         fetchCautionLocations();
     }, []);
 
-
-    // draw circles base on "cautionLocations"
     React.useEffect(() => {
         if (cautionLocations) {
             const circles = turf.featureCollection(
@@ -123,8 +119,6 @@ function Home() {
         }
     }, [cautionLocations]);
 
-
-    // watch user location
     React.useEffect(() => {
         if (!navigator.geolocation) {
             console.warn("Geolocation not supported");
@@ -151,8 +145,6 @@ function Home() {
                 },
                 (error) => {
                     console.error("Geolocation watch error:", error);
-
-                    // Fallback if high accuracy caused an issue
                     if (highAccuracy && error.code === error.TIMEOUT) {
                         console.log("Retrying with enableHighAccuracy: false");
                         navigator.geolocation.clearWatch(watchId);
@@ -167,16 +159,13 @@ function Home() {
             );
         };
 
-        // Start with high accuracy first
         startWatch(true);
 
-        // Cleanup watcher when unmounted
         return () => {
             if (watchId) navigator.geolocation.clearWatch(watchId);
         };
     }, []);
 
-    // Check if user in any circles
     React.useEffect(() => {
         if (!userLocation || !circlesData) return;
 
@@ -254,10 +243,6 @@ function Home() {
                                 />
                             </Marker>
                         )}
-
-                        {/* <Popup longitude={popupLocation[0]} latitude={popupLocation[1]}>
-                                <h3>You are approximately here!</h3>
-                            </Popup> */}
                     </Map>
                 </div>
                 <div className="flex flex-col gap-4 px-4 py-4 bg-white">
