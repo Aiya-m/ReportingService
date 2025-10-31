@@ -77,6 +77,13 @@ app.get("/reports/:id", async (req, res) => {
   res.json({ report: rows[0] });
 });
 
+app.put("/reports/:id/status", async (req, res) => {
+  const { id } = req.params;
+  const { status } = req.body;
+  await promisePool.execute("UPDATE Report SET status = ? WHERE id = ?", [status, id]);
+  res.json({ message: "Status updated successfully" });
+});
+
 
 app.post("/", async (req, res) => {
   const { firstname, lastname, phone_number, latitude, longitude, is_emergency, title, description } = req.body;
