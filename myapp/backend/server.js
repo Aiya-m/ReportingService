@@ -1,28 +1,17 @@
-import 'dotenv/config';
 import bodyParser from "body-parser";
 import express from "express";
 import cors from "cors";
-// import dotenv from "dotenv";
+import dotenv from "dotenv";
 import multer from "multer";
 import mysql from "mysql2";
 import { uploadToS3 } from "./s3.js";
-import {
-  CognitoIdentityProviderClient,
-  ListUsersCommand,
-  AdminEnableUserCommand,
-  AdminDeleteUserCommand,
-  AdminDisableUserCommand,
-  AdminGetUserCommand,
-  AdminUpdateUserAttributesCommand,
-} from "@aws-sdk/client-cognito-identity-provider";
 
-// dotenv.config();
+dotenv.config();
 const app = express();
 const PORT = 5000;
 app.use(cors());
-app.use(express.json({ limit: "20mb" }));
-app.use(bodyParser.json({ limit: "20mb" }));
-
+app.use(express.json());
+app.use(bodyParser.json());
 
 const upload = multer({ storage: multer.memoryStorage() });
 
@@ -39,20 +28,6 @@ app.post("/images", upload.single("image"), async (req, res) => {
 
   return res.status(201).json({ key });
 });
-
-const client = new CognitoIdentityProviderClient({
-  region: process.env.AWS_REGION,
-  credentials: {
-    accessKeyId: process.env.AWS_ACCESS_KEY_ID,
-    secretAccessKey: process.env.AWS_SECRET_ACCESS_KEY,
-    sessionToken: process.env.AWS_SESSION_TOKEN
-  },
-});
-
-const cognitoClient = new CognitoIdentityProviderClient({
-  region: "us-east-1",
-});
-const USER_POOL_ID = "us-east-1_4wFdFGByS";
 
 const db = mysql.createPool({
   host: process.env.DB_HOST,
@@ -73,132 +48,8 @@ db.getConnection((err, connection) => {
   }
 });
 
-const transformCognitoUser = (cognitoUser, Role) => {
-  const attributes = cognitoUser.Attributes.reduce((acc, attr) => {
-    acc[attr.Name] = attr.Value;
-    return acc;
-  }, {});
-  console.log(attributes['custom:Role'])
-
-  let displayStatus;
-
-  if (cognitoUser.Enabled === false) {
-    displayStatus = 'Disabled';
-  } else {
-    displayStatus = 'Enabled';
-  }
-
-  if (attributes['custom:Role'] == Role) {
-    return {
-      username: cognitoUser.Username,
-      status: cognitoUser.UserStatus,
-      createdAt: cognitoUser.UserCreateDate,
-      email: attributes.email,
-      phone: attributes.phone_number,
-      firstname: attributes.given_name,
-      lastname: attributes.family_name,
-      address: attributes['custom:address'],
-      department: attributes['custom:department'],
-      officer_id: attributes['custom:officer_id'],
-      citizen_id: attributes['custom:citizen_id'],
-      displayStatus: displayStatus
-    };
-  }
-  return null;
-};
-
-app.post('/api/disable-user', async (req, res) => {
-    const { username } = req.body;
-
-    if (!username) {
-        return res.status(400).json({ error: "Username is required" });
-    }
-
-    const params = {
-        UserPoolId: USER_POOL_ID,
-        Username: username,
-    };
-
-    try {
-        const command = new AdminDisableUserCommand(params);
-        await cognitoClient.send(command);
-        
-        res.status(200).json({ message: "User disabled successfully" });
-
-    } catch (error) {
-        console.error("Error disabling user:", error);
-        res.status(500).json({ error: "Failed to disable user" });
-    }
-});
-
-app.get('/api/users', async (req, res) => {
-  const params = {
-    UserPoolId: USER_POOL_ID,
-  };
-  const Role = req.query.isOfficer;
-  console.log(Role)
-
-  try {
-    const command = new ListUsersCommand(params);
-    const response = await cognitoClient.send(command);
-    const formattedUsers = response.Users.map(user => transformCognitoUser(user, Role)).filter(Boolean);
-    res.json(formattedUsers);
-  } catch (error) {
-    console.error("ไม่สามารถแสดงข้อมูลจาก Cognito :", error);
-    res.status(500).json({ error: "ไม่สามารถแสดงข้อมูล" });
-  }
-});
-
-app.post('/api/confirm-user', async (req, res) => {
-  const { username } = req.body;
-
-  if (!username) {
-    return res.status(400).json({ error: "ระบบต้องการผู้ใช้" });
-  }
-
-  const params = {
-    UserPoolId: USER_POOL_ID,
-    Username: username,
-  };
-
-  try {
-    const command = new AdminEnableUserCommand(params);
-    await cognitoClient.send(command);
-    res.status(200).json({ message: "เปลี่ยนสถานะผู้ใช้สำเร็จ" });
-  } catch (error) {
-    console.error("Error confirming user:", error);
-    res.status(500).json({ error: "ไม่สามารถเปลี่ยนสถานะผู้ใช้" });
-  }
-});
-
-app.post('/api/delete-user', async (req, res) => {
-
-  const { username } = req.body;
-
-  if (!username) {
-    return res.status(400).json({ error: "ระบบต้องการผู้ใช้" });
-  }
-
-  const params = {
-    UserPoolId: USER_POOL_ID,
-    Username: username,
-  };
-
-  try {
-    const command = new AdminDeleteUserCommand(params);
-    await cognitoClient.send(command);
-
-    res.status(200).json({ message: "ลบผู้ใช้สำเร็จ!" });
-
-  } catch (error) {
-    console.error("Error deleting user:", error);
-    res.status(500).json({ error: "ไม่สามารถลบผู้ใช้" });
-  }
-});
-
-
 app.post("/report-page", async (req, res) => {
-  const { firstname, lastname, description, phone_number, address, title, attachment } = req.body;
+  const { firstname, lastname, description, phone_number, address, title } = req.body;
 
   if (!description || !phone_number || !address || !title) {
     return res.status(400).json({ message: "กรอกข้อมูลให้ครบ" });
@@ -206,8 +57,8 @@ app.post("/report-page", async (req, res) => {
 
   try {
     const [result] = await promisePool.execute(
-      `INSERT INTO Report (firstname, lastname, description, phone_number, address, title, attachment) VALUES (?, ?, ?, ?, ?, ?, ?)`,
-      [firstname, lastname, description, phone_number, address, title, attachment]
+      `INSERT INTO Report (firstname, lastname, description, phone_number, address, title) VALUES (?, ?, ?, ?, ?, ?)`,
+      [firstname, lastname, description, phone_number, address, title]
     );
     res.status(200).json({ message: "บันทึกข้อมูลเรียบร้อย", reportId: result.insertId })
   } catch (err) {
@@ -236,7 +87,7 @@ app.put("/reports/:id/status", async (req, res) => {
 
 
 app.post("/", async (req, res) => {
-  const { firstname, lastname, phone_number, latitude, longitude, is_emergency, title, description, attachment } = req.body;
+  const { firstname, lastname, phone_number, latitude, longitude, is_emergency, title, description } = req.body;
 
   if (!firstname || !lastname || !phone_number || !latitude || !longitude || !title) {
     return res.status(400).json({ message: "กรอกข้อมูลให้ครบ" });
@@ -244,8 +95,8 @@ app.post("/", async (req, res) => {
 
   try {
     const [result] = await promisePool.execute(
-      `INSERT INTO Report (firstname, lastname, phone_number, latitude, longitude, is_emergency, title, description, attachment) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)`,
-      [firstname, lastname, phone_number, latitude, longitude, is_emergency, title, description, attachment]
+      `INSERT INTO Report (firstname, lastname, phone_number, latitude, longitude, is_emergency, title, description) VALUES (?, ?, ?, ?, ?, ?, ?, ?)`,
+      [firstname, lastname, phone_number, latitude, longitude, is_emergency, title, description]
     );
     res.status(200).json({ message: "บันทึกข้อมูลเรียบร้อย", reportId: result.insertId });
   } catch (err) {
@@ -310,6 +161,10 @@ app.get("/reports-complete", async (req, res) => {
     console.error(err);
     res.status(500).json({ message: "เกิดข้อผิดพลาดในการดึงข้อมูล" });
   }
+});
+
+app.get("/", (req, res) => {
+  res.send("Hello from backend");
 });
 
 app.get("/api", (req, res) => {
