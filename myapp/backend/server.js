@@ -474,4 +474,4 @@ app.post("/api/manage-profile", async (req, res) => {
   }
 })
 
-app.listen(PORT, () => console.log(`Server running on port ${PORT}`));
+app.listen(5000, "127.0.0.1", () => console.log("Server running on 127.0.0.1:5000"));
