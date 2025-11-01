@@ -13,7 +13,7 @@ const ReportInfo = () => {
   useEffect(() => {
     const fetchReport = async () => {
       try {
-        const res = await fetch(`http://localhost:5000/api/reports/${id}`);
+        const res = await fetch(`/api/reports/${id}`);
         const data = await res.json();
         if (res.ok) {
           setReport(data.report);
